@@ -1,0 +1,31 @@
+{
+  "model": "modelAM",
+  "input": "procurement_in_var.json",
+  "objs": {
+    "cost": {
+      "dgalType": "floatMetric",
+      "minMax": "min",
+      "lb": 0,
+      "ub": 1000000
+    },
+    "co2": {
+      "dgalType": "floatMetric",
+      "minMax": "min",
+      "lb": 0,
+      "ub": 1000000
+    },
+    "manufTime": {
+      "dgalType": "floatMetric",
+      "minMax": "min",
+      "lb": 0,
+      "ub": 1000000
+    }
+  },
+  "objs_consts_comp": "config",
+  "input_example": "procurement_in.json",
+  "initialObj": "cost",
+  "alpha_entries": 100,
+  "alpha_epsilon": 0.0001,
+  "unifyObjs_epsilon": 1,
+  "folder": "config_procurement"
+}
