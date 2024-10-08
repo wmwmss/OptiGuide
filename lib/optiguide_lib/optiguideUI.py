@@ -10,15 +10,35 @@ from paretoset import paretoset
 import matplotlib.pyplot as plt
 import mplcursors
 from functools import partial
-dir="/Users/talmanie/Desktop/OptiGuide/config_procurement/"
+import os
+
+# import matplotlib.pyplot as plt
+# print(plt.style.available)
+
+# new dir, dir0, dir1
+dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")) + "/"
+dir0 = dir + "lib/optiguide_lib/"
+dir1 = dir + "procurementDgProject/"
+# dir="/Users/talmanie/Desktop/OptiGuide/procurementDgProject/"
+# dir0="/Users/talmanie/Desktop/OptiGuide/lib/optiguide_lib/"
+# original dir
+#dir="/Users/talmanie/Desktop/OptiGuide/config_procurement/"
 #dir="/Users/talmanie/Desktop/OptiGuide/config_optiSensor/"
-f = open("paretoDB.json","r")
+f = open(dir0+"paretoDB.json","r")
 paretoDB = json.loads(f.read())
 
 # Extract required data from config json
-f = open(dir+"config.json", "r")
-config = json.loads(f.read())
-confObjs = config["objs"]
+# original objs
+# f = open(dir+"config.json", "r")
+# config = json.loads(f.read())
+# confObjs = config["objs"]
+
+# new confObjs from reqSpec and initialObj from config
+with open(dir1+"config.json", "r") as f:
+    config = json.load(f)
+with open(dir+config["reqSpec"],"r") as f:
+    reqSpec = json.load(f)
+confObjs = reqSpec["objectives"]["schema"]
 initialObj = config["initialObj"]
 
 # System Global Variables
@@ -103,7 +123,8 @@ class ParetoFrontGUI(QMainWindow):
         layout = QVBoxLayout(central_widget)
 
         # Create figure and canvas and Navigation toolbar for Pareto front plot
-        plt.style.use('seaborn')   # Matplotlib pre-defined style
+        # plt.style.use('seaborn')   # Matplotlib pre-defined style
+        plt.style.use('seaborn-v0_8')
         figure = Figure()
         self.canvas = FigureCanvas(figure)
         layout.addWidget(self.canvas)

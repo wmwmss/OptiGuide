@@ -1,0 +1,35 @@
+{
+    "model": {
+        "@functionRef": "lib/vThings/vtModels/procurement/modelAM.py:am"
+    },
+    "input": "procurementDgProject/data/vtInstances/procurement_in_var.json",
+    "reqSpec": "procurementDgProject/data/specInstances/procurementReqSpecs/reqSpecProcurement0.json",
+    "vtSpec": "procurementDgProject/vtSpecs/procurement0/vtSpec.json",
+    "objs_consts_comp": "config",
+    "input_example": "procurement_in.json",
+    "initialObj": "cost",
+    "alpha_entries": 100,
+    "alpha_epsilon": 0.0001,
+    "unifyObjs_epsilon": 1,
+    "folder": "procurementDgProject",
+    "objs": {
+        "cost": {
+            "dgalType": "floatMetric",
+            "minMax": "min",
+            "lb": 0,
+            "ub": 1000000
+        },
+        "co2": {
+            "dgalType": "floatMetric",
+            "minMax": "min",
+            "lb": 0,
+            "ub": 1000000
+        },
+        "manufTime": {
+            "dgalType": "floatMetric",
+            "minMax": "min",
+            "lb": 0,
+            "ub": 1000000
+        }
+    }
+}

@@ -1,0 +1,14 @@
+{
+  "@context": {
+    "@vpModels": "lib/vtModels/vpModels/",
+    "@vp": "data/artifacts/userProjects/Bikes/vtInstances/vpInstances/",
+    "@productRef": "data/artifacts/userProjects/Bikes/vtInstances/vpInstances/",
+    "@vtMetricSchemas":"lib/vThings/vtMetricSchemas/",
+    "@vtSpecs":"lib/vThings/vtSpecs/"
+  },
+  "model": {
+    "@functionRef": "lib/vThings/vtModels/procurement/modelAM.py:am"
+},
+  "parametersSchema": "@vtSpecs/bikeVtSpec1/parametersSchema.json",
+  "metricSchema": "@vtMetricSchemas/vBike/metricSchema.json"
+}
