@@ -1,0 +1,37 @@
+{
+  "@context": {
+    "@vsModels": "lib/vtModels/vsModels/",
+    "@vp": "data/artifacts/userProjects/Bikes/vtInstances/vpInstances/",
+    "@productRef": "data/artifacts/userProjects/Bikes/vtInstances/vpInstances/",
+    "@reqTemplates": "lib/templates/reqTemplates/"
+  },
+  "metricSchema":"lib/vThings/vtMetricSchemas/vBike/metricSchema.json",
+  "constraints":{
+    "@functionRef": "@reqTemplates/prodReqTemplates/bike0/constraintsFunctionBike0.py:constraints"
+  },
+  "objectives":{
+    "schema": {
+      "cost": {
+        "dgalType": "floatMetric",
+        "minMax": "min",
+        "lb": 0,
+        "ub": 1000000
+      },
+      "co2": {
+        "dgalType": "floatMetric",
+        "minMax": "min",
+        "lb": 0,
+        "ub": 1000000
+      },
+      "manufTime": {
+        "dgalType": "floatMetric",
+        "minMax": "min",
+        "lb": 0,
+        "ub": 1000000
+      }
+  },
+    "function":{
+      "@functionRef": "@reqTemplates/prodReqTemplates/bike0/objFunctionBike0.py:objectives"
+    }
+  }
+}

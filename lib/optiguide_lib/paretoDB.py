@@ -1,13 +1,53 @@
-
+import re
+import numpy as np
+import os
 import json
 import importlib
-import lib.dgal_lib.dgalPy as dgal
 from scipy.spatial import distance
-import numpy as np
-from sklearn_extra.cluster import KMedoids
+import sys
+import lib.dgal_lib.dgalPy as dgal
+print(f"Python version: {sys.version}")
+print(f"Python path: {sys.path}")
+try:
+    from sklearn_extra.cluster import KMedoids
+    print("Successfully imported KMedoids")
+    print(f"sklearn_extra version: {importlib.import_module('sklearn_extra').__version__}")
+except ImportError as e:
+    print(f"Error importing KMedoids: {e}")
+    print("sklearn_extra is not installed or not accessible.")
+    from sklearn.cluster import KMeans
+    print("Using KMeans as a fallback.")
 
-dir="/Users/talmanie/Desktop/OptiGuide/config_procurement/"
+# new dir
+dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")) + "/"
+#dir="/Users/talmanie/Desktop/OptiGuide/"
+# original dir
+#dir="/Users/talmanie/Desktop/OptiGuide/config_procurement/"
 #dir="/Users/talmanie/Desktop/OptiGuide/config_optiSensor/"
+
+#-------------------------------------------------------------------------------
+
+# Extract model from vtSpec
+def extractModel(config):
+    with open(dir+config["vtSpec"],"r") as f:
+        vtSpec = json.load(f)
+    model_path = vtSpec["model"]["@functionRef"].replace('/', '.')
+    model_path = re.sub(r'^\.+', '', model_path)
+    module_name, function_name = model_path.rsplit(':', 1)
+    
+    # Remove the '.py' from the module name if it's there
+    if module_name.endswith('.py'):
+        module_name = module_name[:-3]
+    
+    # Use importlib.util to load the module
+    spec = importlib.util.spec_from_file_location(module_name, dir + vtSpec["model"]["@functionRef"].split(':')[0])
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    
+    model = getattr(module, function_name)
+    return model
+
 #-------------------------------------------------------------------------------
 # Unifying entries of initial DB with the similar objectives by applying five steps:
 # 1- sort the entries' list by objective dictionaries using Euclidean distance.
@@ -46,23 +86,32 @@ def unifyParetoEntries(initialDB, confObjs, uniEpsilon):
             print("index:", dict["index"],"| objectives:", dict["objectives"], "| weights:", dict["weights"])
         print()
 
-    paretoDB=[]
-    # step#3 >
+    paretoDB = []
     for group in groups:
         # convert weight dictionaries to numpy array
-        data = np.array([ list(d["weights"].values()) for d in group ])
-        # define k-medoids algorithm with 1 cluster and Euclidean distance
-        kmedoids = KMedoids(n_clusters=1, metric='euclidean', random_state=0)
-        # fit k-medoids to data
-        kmedoids.fit(data)
-        # get medoid index and value
-        medoid_index = kmedoids.medoid_indices_[0]
-        medoid= group[medoid_index]
-        original_index= medoid["index"]
+        data = np.array([list(d["weights"].values()) for d in group])
+        
+        try:
+            # Try to use KMedoids if available
+            kmedoids = KMedoids(n_clusters=1, metric='euclidean', random_state=0)
+            kmedoids.fit(data)
+            medoid_index = kmedoids.medoid_indices_[0]
+            medoid = group[medoid_index]
+        except NameError:
+            # If KMedoids is not available, use KMeans as a fallback
+            kmeans = KMeans(n_clusters=1, random_state=0)
+            kmeans.fit(data)
+            centroid = kmeans.cluster_centers_[0]
+            # Find the closest point to the centroid
+            medoid_index = np.argmin(np.sum((data - centroid)**2, axis=1))
+            medoid = group[medoid_index]
+        
+        original_index = medoid["index"]
 
         print("Medoid index:", medoid_index)
         print("Medoid:", medoid)
-    # step#4 >
+
+        # step#4 >
         paretoDB.append({
             "index": groups.index(group),
             "utility": initialDB[original_index]["utility"],
@@ -106,8 +155,10 @@ def paretoDB(config, wList, minMaxObjs):
     f = open(dir+config["input"],"r")
     input = json.loads(f.read())
 
-    model_name = config["folder"]+ "." + config["model"]
-    model = importlib.import_module(model_name)
+    #model_name = config["folder"]+ "." + config["model"]
+    #model = importlib.import_module(model_name)
+    # new modelAM extract from vtSpec
+    model = extractModel(config)
 
     confObjs = config["objs"]
 
@@ -122,7 +173,7 @@ def paretoDB(config, wList, minMaxObjs):
             return sum([ normObjs[obj] * wList[i][obj] for obj in normObjs])    # / sum([wList[i][obj] for obj in normObjs])
 
         optAnswer = dgal.max({
-            "model": model.am,
+            "model": model,
             "input": input,
             "obj": utility,
             "constraints": lambda o: conf.consts(o),
@@ -130,7 +181,7 @@ def paretoDB(config, wList, minMaxObjs):
             "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
             })
         optInput = optAnswer["solution"]
-        optOutput = model.am(optInput)
+        optOutput = model(optInput)
         objectives = conf.objs(optOutput)
         initialDB.append({
             "index": i,
