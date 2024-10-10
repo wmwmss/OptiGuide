@@ -1,0 +1,20 @@
+{
+    "cost": {
+        "dgalType": "floatMetric",
+        "lb": 0,
+        "ub": 10
+    },
+    "co2": {
+        "dgalType": "floatMetric",
+        "lb": 0,
+        "ub": 10
+    },
+    "manufTime": {
+        "dgalType": "floatMetric",
+        "lb": 0,
+        "ub": 10
+    },
+    "constraints": {
+        "dgalType": "booleanMetric"
+    }
+}

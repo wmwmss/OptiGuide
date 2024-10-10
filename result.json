@@ -1,0 +1,33 @@
+{
+    "Problem": [
+        {
+            "Lower bound": 1.013116177053936,
+            "Name": "unknown",
+            "Number of binary variables": 0,
+            "Number of constraints": 15,
+            "Number of continuous variables": 0,
+            "Number of integer variables": 6,
+            "Number of nonzeros": 18,
+            "Number of objectives": 1,
+            "Number of solutions": 1,
+            "Number of variables": 6,
+            "Sense": "maximize",
+            "Upper bound": 1.013116177053936
+        }
+    ],
+    "Solution": [
+        {
+            "number of solutions": 0,
+            "number of solutions displayed": 0
+        }
+    ],
+    "Solver": [
+        {
+            "Name": "Gurobi 11.03",
+            "Status": "ok",
+            "Termination condition": "optimal",
+            "Termination message": "Model was solved to optimality (subject to tolerances), and an optimal solution is available.",
+            "Wallclock time": 0.0012841224670410156
+        }
+    ]
+}
