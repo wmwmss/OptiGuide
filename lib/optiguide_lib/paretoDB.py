@@ -6,6 +6,7 @@ import importlib
 from scipy.spatial import distance
 import sys
 import lib.dgal_lib.dgalPy as dgal
+from lib.vThings.vtOperators.vtFunctions import vtOptimalInstance
 print(f"Python version: {sys.version}")
 print(f"Python path: {sys.path}")
 try:
@@ -148,6 +149,74 @@ def normObjectives(objectives, cObjs, minMaxObjs):
     return normalizedObjs
 
 #-------------------------------------------------------------------------------
+# Generate optimal Pareto Preprocessing Structure
+def paretoOptimalDB(config, wList, minMaxObjs):
+
+    # Extract required data from config json
+    f = open(dir+config["input"],"r")
+    input = json.loads(f.read())
+
+    #model_name = config["folder"]+ "." + config["model"]
+    #model = importlib.import_module(model_name)
+    # new modelAM extract from vtSpec
+    model = extractModel(config)
+
+    confObjs = config["objs"]
+
+    objs_consts_comp = config["folder"]+ "." + config["objs_consts_comp"]
+    conf = importlib.import_module(objs_consts_comp)
+
+    # change to vtOptimalInstance, prepare input artifacts
+    with open(dir+config["vtSpec"],"r") as f:
+        vtSpec = json.load(f)
+    # Create vtSpecNew with the model, input fields replaced
+    vtSpecNew = vtSpec.copy()
+    vtSpecNew["model"] = model
+    vtSpecNew["parametersSchema"] = input
+    # Create vtReqSpecNew with the objectives function replaced
+    with open(dir+config["reqSpec"],"r") as f:
+        vtReqSpec = json.load(f)
+    vtReqSpecNew = vtReqSpec.copy()
+    vtReqSpecNew["objectives"]["function"] = conf.objs  
+
+    # Construct initialDB list that contains all possible feasible solutions
+    initialDB = list()
+    for i in range(len(wList)):
+        def utility(o):
+            normObjs= normObjectives(conf.objs(o),confObjs, minMaxObjs)
+            return sum([ normObjs[obj] * wList[i][obj] for obj in normObjs])    # / sum([wList[i][obj] for obj in normObjs])
+
+        # change to vtOptimalInstance
+        optAnswer = vtOptimalInstance(vtSpecNew, vtReqSpecNew, utility, options = None)
+        # original code
+        # optAnswer = dgal.max({
+        #     "model": model,
+        #     "input": input,
+        #     "obj": utility,
+        #     "constraints": lambda o: conf.consts(o),
+        #     #"options": {"problemType": "mip", "solver":"glpk","debug": True}
+        #     "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
+        #     })
+
+        optInput = optAnswer["solution"]
+        optOutput = model(optInput)
+        objectives = conf.objs(optOutput)
+        initialDB.append({
+            "index": i,
+            "utility": utility(optOutput),  # try it with (objectives)
+            "weights": wList[i],
+            "input": optInput,
+            "output": optOutput,
+            "objectives": objectives,
+            "norm_objectives": normObjectives(objectives, confObjs, minMaxObjs)
+            })
+
+    f = open("initialDB.json","w")
+    f.write(json.dumps(initialDB))
+
+    unifyParetoEntries(initialDB, confObjs, config["unifyObjs_epsilon"])
+
+#-------------------------------------------------------------------------------
 # Generate Pareto Preprocessing Structure
 def paretoDB(config, wList, minMaxObjs):
 
@@ -197,5 +266,4 @@ def paretoDB(config, wList, minMaxObjs):
     f.write(json.dumps(initialDB))
 
     unifyParetoEntries(initialDB, confObjs, config["unifyObjs_epsilon"])
-
 #-------------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 import lib.dgal_lib.dgalPy as dgal
 
 def am(input):
+    print("input: ", input)
     demand = input["demand"]
     purchaseInfo = input["purchaseInfo"]
     ppu = purchaseInfo["ppu"]

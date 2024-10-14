@@ -8,20 +8,33 @@ import json
 import pyomo.environ as pyo
 from pyomo.environ import *
 
-from utils import specRefConvertor
-from utils import flowRefConvertor
-from utils import prodRefConvertor
-from utils import getModelRef
-
-from utils import refConvertor
-from utils import instantiator
-
-from utils import dgalPathGenerator
-from utils import metricSchemaConstraints
-from utils import objSchemaConstraints
-
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 sys.path.insert(0, project_root)
+
+from lib.vThings.vtOperators.utils import (
+    specRefConvertor,
+    flowRefConvertor,
+    prodRefConvertor,
+    getModelRef,
+    refConvertor,
+    instantiator,
+    dgalPathGenerator,
+    metricSchemaConstraints,
+    objSchemaConstraints
+)
+
+# from utils import specRefConvertor
+# from utils import flowRefConvertor
+# from utils import prodRefConvertor
+# from utils import getModelRef
+
+# from utils import refConvertor
+# from utils import instantiator
+
+# from utils import dgalPathGenerator
+# from utils import metricSchemaConstraints
+# from utils import objSchemaConstraints
+
 from lib.dgal_lib import dgalPy as dgal
 
 #-------------------------------------------------------------------------------
@@ -86,13 +99,17 @@ def vtOptimalInstance(vtSpec, vtReqSpec, utility, options = None):
     objectives = vtReqSpec["objectives"]["function"]
     objsSchemaAndBounds = vtReqSpec["objectives"]["schema"]
 
+    # get utility function from wList and normObjs
     # o is output of the model
-    def utilityFunction(o):
-        objs = objectives(o)
-        utilityValue = sum([objs[obj]*utility["weights"][obj] for obj in objsSchemaAndBounds])
-        return utilityValue
+    # def utilityFunction(o):
+    #     objs = objectives(o)
+    #     utilityValue = sum([objs[obj]*utility["weights"][obj] for obj in objsSchemaAndBounds])
+    #     return utilityValue
 
-    minMaxFlag = utility["minMax"]
+    #minMaxFlag = utility["minMax"]
+    # normalized objs, always max utility
+    minMaxFlag = "max"
+
     def constraints(o):
         modelComputedConstraints = o["constraints"]
         # possibly implement in DGAL, assuming we have it here
@@ -118,7 +135,8 @@ def vtOptimalInstance(vtSpec, vtReqSpec, utility, options = None):
         model,
         input,
         minMaxFlag,
-        utilityFunction,
+        # utilityFunction,
+        utility,
         constraints,
         # options
         {"problemType": "mip", "solver":"gurobi_direct","debug": True}
