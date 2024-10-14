@@ -16,7 +16,8 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")
 sys.path.insert(0, project_root)
 # Now import the modules
 from lib.dgal_lib import dgalPy as dgal
-from lib.optiguide_lib import paretoDB as pdb
+# from lib.optiguide_lib import paretoDB as pdb
+from lib.optiguide_lib import paretoDB as podb
 from lib.optiguide_lib.paretoDB import extractModel
 
 # original dir 
@@ -82,9 +83,6 @@ def computeMinMax(config):
     conf = importlib.import_module(objs_consts_comp)
     # original objs
     cObjs = config["objs"]
-    # new objs from reqSpec
-   
-    
 
     minMaxObjs = {}
     for obj in cObjs:
@@ -152,6 +150,6 @@ print(len(weightsList))
 minMaxObjs= computeMinMax(config)
 print(minMaxObjs)
 
-pdb.paretoDB(config, weightsList, minMaxObjs)
+podb.paretoOptimalDB(config, weightsList, minMaxObjs)
 
 #-------------------------------------------------------------------------------

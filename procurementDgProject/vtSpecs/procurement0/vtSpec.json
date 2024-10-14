@@ -1,14 +1,13 @@
 {
   "@context": {
-    "@vpModels": "lib/vtModels/vpModels/",
-    "@vp": "data/artifacts/userProjects/Bikes/vtInstances/vpInstances/",
-    "@productRef": "data/artifacts/userProjects/Bikes/vtInstances/vpInstances/",
-    "@vtMetricSchemas":"lib/vThings/vtMetricSchemas/",
-    "@vtSpecs":"lib/vThings/vtSpecs/"
+    "@vtModels": "lib/vThings/vtModels/",
+    "@vt": "procurementDgProject/data/vtInstances/",
+    "@vtSpecs":"procurementDgProject/vtSpecs/",
+    "@vtMetricSchemas":"procurementDgProject/metricSchema/"
   },
   "model": {
     "@functionRef": "lib/vThings/vtModels/procurement/modelAM.py:am"
 },
-  "parametersSchema": "@vtSpecs/bikeVtSpec1/parametersSchema.json",
-  "metricSchema": "@vtMetricSchemas/vBike/metricSchema.json"
+  "parametersSchema": "@vtSpecs/procurement0/parametersSchema.json",
+  "metricSchema": "@vtMetricSchemas/metricSchema.json"
 }
