@@ -1,13 +1,13 @@
 {
   "@context": {
-    "@vsModels": "lib/vtModels/vsModels/",
-    "@vp": "data/artifacts/userProjects/Bikes/vtInstances/vpInstances/",
-    "@productRef": "data/artifacts/userProjects/Bikes/vtInstances/vpInstances/",
-    "@reqTemplates": "lib/templates/reqTemplates/"
+    "@vtModels": "lib/vThings/vtModels/",
+    "@vt": "procurementDgProject/data/vtInstances/",
+    "@vtSpecs":"procurementDgProject/vtSpecs/",
+    "@vtMetricSchemas":"procurementDgProject/metricSchema/"
   },
-  "metricSchema":"lib/vThings/vtMetricSchemas/vBike/metricSchema.json",
+  "metricSchema":"@vtMetricSchemas/metricSchema.json",
   "constraints":{
-    "@functionRef": "@reqTemplates/prodReqTemplates/bike0/constraintsFunctionBike0.py:constraints"
+    "@functionRef": "/procurementDgProject/config.py:consts"
   },
   "objectives":{
     "schema": {
@@ -31,7 +31,7 @@
       }
   },
     "function":{
-      "@functionRef": "@reqTemplates/prodReqTemplates/bike0/objFunctionBike0.py:objectives"
+      "@functionRef": "/procurementDgProject/config.py:objs"
     }
   }
 }
