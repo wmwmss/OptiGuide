@@ -7,6 +7,8 @@ from scipy.spatial import distance
 import sys
 import lib.dgal_lib.dgalPy as dgal
 from lib.vThings.vtOperators.vtFunctions import vtOptimalInstance
+
+
 print(f"Python version: {sys.version}")
 print(f"Python path: {sys.path}")
 try:
@@ -21,33 +23,8 @@ except ImportError as e:
 
 # new dir
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")) + "/"
-#dir="/Users/talmanie/Desktop/OptiGuide/"
 # original dir
 #dir="/Users/talmanie/Desktop/OptiGuide/config_procurement/"
-#dir="/Users/talmanie/Desktop/OptiGuide/config_optiSensor/"
-
-#-------------------------------------------------------------------------------
-
-# Extract model from vtSpec
-def extractModel(config):
-    with open(dir+config["vtSpec"],"r") as f:
-        vtSpec = json.load(f)
-    model_path = vtSpec["model"]["@functionRef"].replace('/', '.')
-    model_path = re.sub(r'^\.+', '', model_path)
-    module_name, function_name = model_path.rsplit(':', 1)
-    
-    # Remove the '.py' from the module name if it's there
-    if module_name.endswith('.py'):
-        module_name = module_name[:-3]
-    
-    # Use importlib.util to load the module
-    spec = importlib.util.spec_from_file_location(module_name, dir + vtSpec["model"]["@functionRef"].split(':')[0])
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    
-    model = getattr(module, function_name)
-    return model
 
 #-------------------------------------------------------------------------------
 # Unifying entries of initial DB with the similar objectives by applying five steps:
@@ -56,12 +33,12 @@ def extractModel(config):
 # 3- find the representitive weight dictionary for each group using K-Medoids clustering, and get its related objective dictionary.
 # 4- use the original index of the representitive data point to extract the associated utility, input and output from the initialDB and generate an entry to the constructed paretoDB.
 # 5- sort the generated paretoDB by weight vectors using Euclidean distance. --> canceled
-def unifyParetoEntries(initialDB, confObjs, uniEpsilon):
+def unifyParetoEntries(initialDB, objsSchema, uniEpsilon):
     # step#1 >
     #extract from the initialDB: all objective dictionaries, their related weights, and the index for each
     entries_list=[{"index": p["index"], "objectives":p["objectives"], "weights":p["weights"]} for p in initialDB]
     # define the reference point
-    reference_point = [ 0 for i in range(len(confObjs))]
+    reference_point = [ 0 for i in range(len(objsSchema))]
     # sort the list of objective dictionaries based on their Euclidean distance to the reference point
     sorted_list = sorted(entries_list, key=lambda x: distance.euclidean(list(x["objectives"].values()), reference_point))
     #print(sorted_list)
@@ -91,7 +68,7 @@ def unifyParetoEntries(initialDB, confObjs, uniEpsilon):
     for group in groups:
         # convert weight dictionaries to numpy array
         data = np.array([list(d["weights"].values()) for d in group])
-        
+
         try:
             # Try to use KMedoids if available
             kmedoids = KMedoids(n_clusters=1, metric='euclidean', random_state=0)
@@ -106,7 +83,7 @@ def unifyParetoEntries(initialDB, confObjs, uniEpsilon):
             # Find the closest point to the centroid
             medoid_index = np.argmin(np.sum((data - centroid)**2, axis=1))
             medoid = group[medoid_index]
-        
+
         original_index = medoid["index"]
 
         print("Medoid index:", medoid_index)
@@ -137,10 +114,10 @@ def unifyParetoEntries(initialDB, confObjs, uniEpsilon):
 #-------------------------------------------------------------------------------
 
 # normalize the objective in the range [0-1]
-def normObjectives(objectives, cObjs, minMaxObjs):
+def normObjectives(objectives, objsSchema, minMaxObjs):
     normalizedObjs={}
     for obj in objectives:
-        if cObjs[obj]["minMax"]=="min": # for a minimization metric
+        if objsSchema[obj]["minMax"]=="min": # for a minimization metric
             normObj= (minMaxObjs[obj]["max"]-objectives[obj])/(minMaxObjs[obj]["max"]-minMaxObjs[obj]["min"])
         else:                          # for a maximization metric
             normObj= (objectives[obj]-minMaxObjs[obj]["min"])/(minMaxObjs[obj]["max"]-minMaxObjs[obj]["min"])
@@ -152,17 +129,19 @@ def normObjectives(objectives, cObjs, minMaxObjs):
 # Generate optimal Pareto Preprocessing Structure
 def paretoOptimalDB(config, wList, minMaxObjs):
 
-    # Extract required data from config json
+    # extract input from config json
     f = open(dir+config["input"],"r")
     input = json.loads(f.read())
 
-    #model_name = config["folder"]+ "." + config["model"]
-    #model = importlib.import_module(model_name)
-    # new modelAM extract from vtSpec
+    # extract model from vtSpec
+    from lib.optiguide_lib.mainPreprocessing import extractModel
     model = extractModel(config)
 
-    confObjs = config["objs"]
+    # extract objectives schema from reqSpec
+    from lib.optiguide_lib.mainPreprocessing import extractObjs
+    objsSchema = extractObjs()
 
+    # extract objectives & constraints function from config json
     objs_consts_comp = config["folder"]+ "." + config["objs_consts_comp"]
     conf = importlib.import_module(objs_consts_comp)
 
@@ -173,17 +152,18 @@ def paretoOptimalDB(config, wList, minMaxObjs):
     vtSpecNew = vtSpec.copy()
     vtSpecNew["model"] = model
     vtSpecNew["parametersSchema"] = input
-    # Create vtReqSpecNew with the objectives function replaced
+    # Create vtReqSpecNew with the objectives function, constraints replaced
     with open(dir+config["reqSpec"],"r") as f:
         vtReqSpec = json.load(f)
     vtReqSpecNew = vtReqSpec.copy()
-    vtReqSpecNew["objectives"]["function"] = conf.objs  
+    vtReqSpecNew["objectives"]["function"] = conf.objs
+    vtReqSpecNew["constraints"] = conf.consts
 
     # Construct initialDB list that contains all possible feasible solutions
     initialDB = list()
     for i in range(len(wList)):
         def utility(o):
-            normObjs= normObjectives(conf.objs(o),confObjs, minMaxObjs)
+            normObjs= normObjectives(conf.objs(o),objsSchema, minMaxObjs)
             return sum([ normObjs[obj] * wList[i][obj] for obj in normObjs])    # / sum([wList[i][obj] for obj in normObjs])
 
         # change to vtOptimalInstance
@@ -197,73 +177,22 @@ def paretoOptimalDB(config, wList, minMaxObjs):
         #     #"options": {"problemType": "mip", "solver":"glpk","debug": True}
         #     "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
         #     })
-
         optInput = optAnswer["solution"]
         optOutput = model(optInput)
         objectives = conf.objs(optOutput)
         initialDB.append({
             "index": i,
-            "utility": utility(optOutput),  # try it with (objectives)
+            "utility": utility(objectives),
             "weights": wList[i],
             "input": optInput,
             "output": optOutput,
             "objectives": objectives,
-            "norm_objectives": normObjectives(objectives, confObjs, minMaxObjs)
+            "norm_objectives": normObjectives(objectives, objsSchema, minMaxObjs)
             })
 
     f = open("initialDB.json","w")
     f.write(json.dumps(initialDB))
 
-    unifyParetoEntries(initialDB, confObjs, config["unifyObjs_epsilon"])
+    unifyParetoEntries(initialDB, objsSchema, config["unifyObjs_epsilon"])
 
-#-------------------------------------------------------------------------------
-# Generate Pareto Preprocessing Structure
-def paretoDB(config, wList, minMaxObjs):
-
-    # Extract required data from config json
-    f = open(dir+config["input"],"r")
-    input = json.loads(f.read())
-
-    #model_name = config["folder"]+ "." + config["model"]
-    #model = importlib.import_module(model_name)
-    # new modelAM extract from vtSpec
-    model = extractModel(config)
-
-    confObjs = config["objs"]
-
-    objs_consts_comp = config["folder"]+ "." + config["objs_consts_comp"]
-    conf = importlib.import_module(objs_consts_comp)
-
-    # Construct initialDB list that contains all possible feasible solutions
-    initialDB = list()
-    for i in range(len(wList)):
-        def utility(o):
-            normObjs= normObjectives(conf.objs(o),confObjs, minMaxObjs)
-            return sum([ normObjs[obj] * wList[i][obj] for obj in normObjs])    # / sum([wList[i][obj] for obj in normObjs])
-
-        optAnswer = dgal.max({
-            "model": model,
-            "input": input,
-            "obj": utility,
-            "constraints": lambda o: conf.consts(o),
-            #"options": {"problemType": "mip", "solver":"glpk","debug": True}
-            "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
-            })
-        optInput = optAnswer["solution"]
-        optOutput = model(optInput)
-        objectives = conf.objs(optOutput)
-        initialDB.append({
-            "index": i,
-            "utility": utility(optOutput),  # try it with (objectives)
-            "weights": wList[i],
-            "input": optInput,
-            "output": optOutput,
-            "objectives": objectives,
-            "norm_objectives": normObjectives(objectives, confObjs, minMaxObjs)
-            })
-
-    f = open("initialDB.json","w")
-    f.write(json.dumps(initialDB))
-
-    unifyParetoEntries(initialDB, confObjs, config["unifyObjs_epsilon"])
 #-------------------------------------------------------------------------------

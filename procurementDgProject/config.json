@@ -11,25 +11,5 @@
     "alpha_entries": 100,
     "alpha_epsilon": 0.0001,
     "unifyObjs_epsilon": 1,
-    "folder": "procurementDgProject",
-    "objs": {
-        "cost": {
-            "dgalType": "floatMetric",
-            "minMax": "min",
-            "lb": 0,
-            "ub": 1000000
-        },
-        "co2": {
-            "dgalType": "floatMetric",
-            "minMax": "min",
-            "lb": 0,
-            "ub": 1000000
-        },
-        "manufTime": {
-            "dgalType": "floatMetric",
-            "minMax": "min",
-            "lb": 0,
-            "ub": 1000000
-        }
-    }
+    "folder": "procurementDgProject"
 }

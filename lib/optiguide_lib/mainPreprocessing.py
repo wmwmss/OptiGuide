@@ -1,14 +1,12 @@
 import re
 import sys
-#sys.path.append("/Users/talmanie/Desktop/OptiGuide")
 import json
 import math
 import importlib
 from itertools import product
 import importlib.util
-
-# import lib.dgal_lib.dgalPy as dgal
 import os
+
 # Get the project root directory (assuming it's named "OptiGuide")
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")) + "/"
 #print(project_root)
@@ -16,41 +14,53 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")
 sys.path.insert(0, project_root)
 # Now import the modules
 from lib.dgal_lib import dgalPy as dgal
-# from lib.optiguide_lib import paretoDB as pdb
 from lib.optiguide_lib import paretoDB as podb
-from lib.optiguide_lib.paretoDB import extractModel
 
-# original dir 
+# original dir
 # dir="/Users/talmanie/Desktop/OptiGuide/config_procurement/"
-#dir="/Users/talmanie/Desktop/OptiGuide/config_optiSensor/"
 
 # new dir after folder renamed to procurementDgProject
 # dir="/Users/talmanie/Desktop/OptiGuide/procurementDgProject/"
 dir=project_root+'procurementDgProject/'
-
 with open(dir+"config.json", "r") as f:
     config = json.load(f)
 
+#-------------------------------------------------------------------------------
+# Extract model from vtSpec
+def extractModel(config):
+    with open(project_root+config["vtSpec"],"r") as f:
+        vtSpec = json.load(f)
+    model_path = vtSpec["model"]["@functionRef"].replace('/', '.')
+    model_path = re.sub(r'^\.+', '', model_path)
+    module_name, function_name = model_path.rsplit(':', 1)
+
+    # Remove the '.py' from the module name if it's there
+    if module_name.endswith('.py'):
+        module_name = module_name[:-3]
+
+    # Use importlib.util to load the module
+    spec = importlib.util.spec_from_file_location(module_name, project_root + vtSpec["model"]["@functionRef"].split(':')[0])
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+
+    model = getattr(module, function_name)
+    return model
 
 #-------------------------------------------------------------------------------
-
-# Extract objectives from reqSpec and update config objs
-def extractObjs(config):
-    with open(config["reqSpec"],"r") as f:
+# Extract objectives schema from reqSpec
+def extractObjs():
+    with open(project_root+config["reqSpec"],"r") as f:
         reqSpec = json.load(f)
-    #config["reqSpec"]= reqSpec
-    objs = reqSpec["objectives"]["schema"]
-    config["objs"]= objs
-    with open(dir+"config.json", 'w') as f:
-        json.dump(config, f, indent=4)
-
+    objsSchema = reqSpec["objectives"]["schema"]
+    return objsSchema
 #-------------------------------------------------------------------------------
 
 # Generate a list of weight combinations for all objectives
-def generateWeights(confObjs, num_entries, e):
+def generateWeights(objsSchema, num_entries, e):
     weightsList=[]
-    objs_except_last = list(confObjs.keys())[:-1]
-    last_obj = list(confObjs.keys())[-1]
+    objs_except_last = list(objsSchema.keys())[:-1]
+    last_obj = list(objsSchema.keys())[-1]
     delta= ((math.pi/2) - 2*e) / num_entries
     alphas= [ e+(n * delta) for n in range(num_entries+1)]
     weights = [math.sin(a) for a in alphas]
@@ -69,24 +79,21 @@ def generateWeights(confObjs, num_entries, e):
 
 # Compute min and max possible value for each objective
 def computeMinMax(config):
-    # Extract required data from config json
+
+    # extract input from config json
     f = open(project_root+config["input"],"r")
     input = json.loads(f.read())
-    
-    # original modelAM extract
-    # model_name= config["folder"]+ "." + config["model"]
-    # model = importlib.import_module(model_name)
-    # new modelAM extract from vtSpec
+
+    # extract model from vtSpec
     model = extractModel(config)
-    
+
+    # extract objectives & constraints function from config json
     objs_consts_comp = config["folder"]+ "." + config["objs_consts_comp"]
     conf = importlib.import_module(objs_consts_comp)
-    # original objs
-    cObjs = config["objs"]
 
     minMaxObjs = {}
-    for obj in cObjs:
-        if cObjs[obj]["minMax"]=="min": # a minimization metric
+    for obj in objsSchema:
+        if objsSchema[obj]["minMax"]=="min": # a minimization metric
         # optimizing the objective to find its Minimum value
             optAnswer_minObj = dgal.min({
                 "model": model,
@@ -103,7 +110,7 @@ def computeMinMax(config):
                 "model": model,
                 "input": input,
                 "obj": lambda o: conf.objs(o)[obj],
-                "constraints": lambda o: dgal.all([ conf.consts(o), conf.objs(o)[obj] <= cObjs[obj]["ub"]]),
+                "constraints": lambda o: dgal.all([ conf.consts(o), conf.objs(o)[obj] <= objsSchema[obj]["ub"]]),
                 #"options": {"problemType": "mip", "solver":"glpk","debug": True}
                 "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
                 })
@@ -127,7 +134,7 @@ def computeMinMax(config):
                 "model": model,
                 "input": input,
                 "obj": lambda o: conf.objs(o)[obj],
-                "constraints": lambda o: dgal.all([ conf.consts(o) , conf.objs(o)[obj] >= cObjs[obj]["lb"]]),
+                "constraints": lambda o: dgal.all([ conf.consts(o) , conf.objs(o)[obj] >= objsSchema[obj]["lb"]]),
                 #"options": {"problemType": "mip", "solver":"glpk","debug": True}
                 "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
                 })
@@ -140,14 +147,14 @@ def computeMinMax(config):
 
 #-------------------------------------------------------------------------------
 
-#Function Calls
-# new extractObjs to update config objs from reqSpec
-extractObjs(config)
-weightsList= generateWeights( config["objs"], config["alpha_entries"], config["alpha_epsilon"])
-#print(weightsList)
-print(len(weightsList))
+# extract objectives schema from reqSpec
+objsSchema = extractObjs()
 
-minMaxObjs= computeMinMax(config)
+weightsList = generateWeights( objsSchema, config["alpha_entries"], config["alpha_epsilon"])
+#print(weightsList)
+#print(len(weightsList))
+
+minMaxObjs = computeMinMax(config)
 print(minMaxObjs)
 
 podb.paretoOptimalDB(config, weightsList, minMaxObjs)

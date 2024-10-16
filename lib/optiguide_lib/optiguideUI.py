@@ -19,34 +19,30 @@ import os
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")) + "/"
 dir0 = dir + "lib/optiguide_lib/"
 dir1 = dir + "procurementDgProject/"
-# dir="/Users/talmanie/Desktop/OptiGuide/procurementDgProject/"
-# dir0="/Users/talmanie/Desktop/OptiGuide/lib/optiguide_lib/"
+
 # original dir
 #dir="/Users/talmanie/Desktop/OptiGuide/config_procurement/"
-#dir="/Users/talmanie/Desktop/OptiGuide/config_optiSensor/"
-f = open(dir0+"paretoDB.json","r")
-paretoDB = json.loads(f.read())
 
-# Extract required data from config json
-# original objs
-# f = open(dir+"config.json", "r")
-# config = json.loads(f.read())
-# confObjs = config["objs"]
-
-# new confObjs from reqSpec and initialObj from config
+# extract initialObj from config
 with open(dir1+"config.json", "r") as f:
     config = json.load(f)
+initialObj = config["initialObj"]
+
+# extract objsSchema from reqSpec
 with open(dir+config["reqSpec"],"r") as f:
     reqSpec = json.load(f)
-confObjs = reqSpec["objectives"]["schema"]
-initialObj = config["initialObj"]
+objsSchema = reqSpec["objectives"]["schema"]
+
+# extract ParetoOptimal Database
+f = open(dir0+"paretoDB.json","r")
+paretoDB = json.loads(f.read())
 
 # System Global Variables
 systemState = list()
 bestSoFar = list()
 #-------------------------------------------------------------------------------
 # Prepare Pareto optimal graph from the ParetoDB points based on the selected x_axis & y_axis objectives and the current weights.
-def paretoOptimal(paretoDB, cObjs, x_axis , y_axis, currentWeights):
+def paretoOptimal(paretoDB, objsSchema, x_axis , y_axis, currentWeights):
 
     # compute the current utility for each point in paretoDB:
     currentUtility=list()
@@ -58,13 +54,13 @@ def paretoOptimal(paretoDB, cObjs, x_axis , y_axis, currentWeights):
                     x_axis: currentUtility,
                     y_axis: [p["objectives"][y_axis] for p in paretoDB]
                     })
-        mask = paretoset(graph_points, sense=["max", cObjs[y_axis]["minMax"]])
+        mask = paretoset(graph_points, sense=["max", objsSchema[y_axis]["minMax"]])
     else:
         graph_points=pd.DataFrame({
                 x_axis: [p["objectives"][x_axis] for p in paretoDB],
                 y_axis: [p["objectives"][y_axis] for p in paretoDB]
                 })
-        mask = paretoset(graph_points, sense=[cObjs[x_axis]["minMax"], cObjs[y_axis]["minMax"]])
+        mask = paretoset(graph_points, sense=[objsSchema[x_axis]["minMax"], objsSchema[y_axis]["minMax"]])
 
     # Filter out the set of non-dominated solutions from the set of feasible solutions
     paretoGraph_points = graph_points[mask]
@@ -123,8 +119,8 @@ class ParetoFrontGUI(QMainWindow):
         layout = QVBoxLayout(central_widget)
 
         # Create figure and canvas and Navigation toolbar for Pareto front plot
-        # plt.style.use('seaborn')   # Matplotlib pre-defined style
-        plt.style.use('seaborn-v0_8')
+        plt.style.use('seaborn')   # Matplotlib pre-defined style
+        # plt.style.use('seaborn-v0_8')
         figure = Figure()
         self.canvas = FigureCanvas(figure)
         layout.addWidget(self.canvas)
@@ -168,8 +164,8 @@ class ParetoFrontGUI(QMainWindow):
     def update_table(self):
         self.table.setRowCount(len(self.paretoFront_data["paretoTable"]))
         self.table.setVerticalHeaderLabels(["Rec {}".format(point+1) for point in range(len(self.paretoFront_data["paretoTable"]))])
-        self.table.setColumnCount(len(confObjs)+3)  # 3 additional columns for : utility, solution, choose?
-        self.table.setHorizontalHeaderLabels(["utility"]+[ obj for obj in confObjs]+["solution"]+["Choose?"])
+        self.table.setColumnCount(len(objsSchema)+3)  # 3 additional columns for : utility, solution, choose?
+        self.table.setHorizontalHeaderLabels(["utility"]+[ obj for obj in objsSchema]+["solution"]+["Choose?"])
 
         # Populate table with utility values
         for point in range(len(self.paretoFront_data["paretoTable"])):
@@ -179,7 +175,7 @@ class ParetoFrontGUI(QMainWindow):
 
         # Populate table with objective values
         for point in range(len(self.paretoFront_data["paretoTable"])):
-            for i, obj in enumerate(confObjs):
+            for i, obj in enumerate(objsSchema):
                 item = QTableWidgetItem(str(self.paretoFront_data["paretoTable"][point]["objectives"][obj]))
                 item.setTextAlignment(Qt.AlignCenter)
                 self.table.setItem(point, i+1, item)
@@ -193,7 +189,7 @@ class ParetoFrontGUI(QMainWindow):
             item = QTableWidgetItem("Click for details")
             item.setTextAlignment(Qt.AlignCenter)
             item.setFont(fontU)
-            item.setData(Qt.UserRole, self.paretoFront_data["paretoTable"][point]["output"])
+            item.setData(Qt.UserRole, self.paretoFront_data["paretoTable"][point]["input"])
             self.table.setItem(point, self.table.columnCount()-2, item)
         # connect the cellClicked signal to the show_dict slot
         self.table.cellClicked.connect(self.show_dict)
@@ -269,7 +265,7 @@ class ParetoFrontGUI(QMainWindow):
         if reply == QMessageBox.Yes:
             bestSoFar.append(self.paretoFront_data["paretoTable"][row_index])   # compute its updated utility on the fly
             #print(bestSoFar)
-            paretoFront_newData = paretoOptimal(paretoDB, confObjs, currentXaxis, currentYaxis, currentWeights)
+            paretoFront_newData = paretoOptimal(paretoDB, objsSchema, currentXaxis, currentYaxis, currentWeights)
             self.update_state(paretoFront_newData)
 #-------------------------------------------------------------------------------
     def update_state(self, paretoFront_newData):
@@ -290,11 +286,11 @@ class ParetoFrontGUI(QMainWindow):
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
     # Initialization
-    currentWeights =  { obj: 1/len(confObjs) for obj in confObjs}
+    currentWeights =  { obj: 1/len(objsSchema) for obj in objsSchema}
     #currentWeights =  {'cost': 0.923860397184827, 'co2': 0.20285975728920072, 'manufTime': 0.32454565994026213}
-    paretoFront_data = paretoOptimal(paretoDB, confObjs,"utility", config["initialObj"], currentWeights)
-    #paretoFront_data = paretoOptimal(paretoDB, confObjs,"aggr_coverage", "cost", currentWeights)
-    #paretoFront_data = paretoOptimal(paretoDB, confObjs,"cost", "co2", currentWeights)
+    paretoFront_data = paretoOptimal(paretoDB, objsSchema,"utility", initialObj, currentWeights)
+    #paretoFront_data = paretoOptimal(paretoDB, objsSchema,"aggr_coverage", "cost", currentWeights)
+    #paretoFront_data = paretoOptimal(paretoDB, objsSchema,"cost", "co2", currentWeights)
     systemState.append(paretoFront_data)
 
 
