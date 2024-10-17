@@ -8,6 +8,6 @@
   "model": {
     "@functionRef": "lib/vThings/vtModels/procurement/modelAM.py:am"
 },
-  "parametersSchema": "@vtSpecs/procurement0/parametersSchema.json",
+  "parametersSchema": "procurementDgProject/vtSpecs/procurement0/parametersSchema.json",
   "metricSchema": "@vtMetricSchemas/metricSchema.json"
 }

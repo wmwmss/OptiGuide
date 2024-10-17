@@ -131,12 +131,15 @@ def vtOptimalInstance(vtSpec, vtReqSpec, utility, options = None):
         ])
         return(constraints)
 
+    def obj(o):
+        return utility(objectives(o))
+
     vtOptimal = dgal.optimize(
         model,
         input,
         minMaxFlag,
         # utilityFunction,
-        utility,
+        obj,
         constraints,
         # options
         {"problemType": "mip", "solver":"gurobi_direct","debug": True}

@@ -8,7 +8,6 @@ import sys
 import lib.dgal_lib.dgalPy as dgal
 from lib.vThings.vtOperators.vtFunctions import vtOptimalInstance
 
-
 print(f"Python version: {sys.version}")
 print(f"Python path: {sys.path}")
 try:
@@ -21,10 +20,7 @@ except ImportError as e:
     from sklearn.cluster import KMeans
     print("Using KMeans as a fallback.")
 
-# new dir
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")) + "/"
-# original dir
-#dir="/Users/talmanie/Desktop/OptiGuide/config_procurement/"
 
 #-------------------------------------------------------------------------------
 # Unifying entries of initial DB with the similar objectives by applying five steps:
@@ -129,21 +125,25 @@ def normObjectives(objectives, objsSchema, minMaxObjs):
 # Generate optimal Pareto Preprocessing Structure
 def paretoOptimalDB(config, wList, minMaxObjs):
 
-    # extract input from config json
-    f = open(dir+config["input"],"r")
-    input = json.loads(f.read())
+    # extract input from vtSpec
+    from lib.optiguide_lib.mainPreprocessing import extractInput
+    input = extractInput(config)
 
     # extract model from vtSpec
     from lib.optiguide_lib.mainPreprocessing import extractModel
     model = extractModel(config)
 
     # extract objectives schema from reqSpec
-    from lib.optiguide_lib.mainPreprocessing import extractObjs
-    objsSchema = extractObjs()
+    from lib.optiguide_lib.mainPreprocessing import extractObjsSchema
+    objsSchema = extractObjsSchema(config)
 
-    # extract objectives & constraints function from config json
-    objs_consts_comp = config["folder"]+ "." + config["objs_consts_comp"]
-    conf = importlib.import_module(objs_consts_comp)
+    # extract objectives function from reqSpec
+    from lib.optiguide_lib.mainPreprocessing import extractObjsFunc
+    objsFunc = extractObjsFunc(config)
+
+    # extract constraints function from reqSpec
+    from lib.optiguide_lib.mainPreprocessing import extractConstFunc
+    constFunc = extractConstFunc(config)
 
     # change to vtOptimalInstance, prepare input artifacts
     with open(dir+config["vtSpec"],"r") as f:
@@ -156,30 +156,22 @@ def paretoOptimalDB(config, wList, minMaxObjs):
     with open(dir+config["reqSpec"],"r") as f:
         vtReqSpec = json.load(f)
     vtReqSpecNew = vtReqSpec.copy()
-    vtReqSpecNew["objectives"]["function"] = conf.objs
-    vtReqSpecNew["constraints"] = conf.consts
+    vtReqSpecNew["objectives"]["function"] = objsFunc
+    vtReqSpecNew["constraints"] = constFunc
 
     # Construct initialDB list that contains all possible feasible solutions
     initialDB = list()
     for i in range(len(wList)):
-        def utility(o):
-            normObjs= normObjectives(conf.objs(o),objsSchema, minMaxObjs)
-            return sum([ normObjs[obj] * wList[i][obj] for obj in normObjs])    # / sum([wList[i][obj] for obj in normObjs])
 
-        # change to vtOptimalInstance
+        def utility(objectives):
+            normObjs = normObjectives(objectives, objsSchema, minMaxObjs)
+            return sum([ normObjs[obj] * wList[i][obj] for obj in normObjs])
+
         optAnswer = vtOptimalInstance(vtSpecNew, vtReqSpecNew, utility, options = None)
-        # original code
-        # optAnswer = dgal.max({
-        #     "model": model,
-        #     "input": input,
-        #     "obj": utility,
-        #     "constraints": lambda o: conf.consts(o),
-        #     #"options": {"problemType": "mip", "solver":"glpk","debug": True}
-        #     "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
-        #     })
+
         optInput = optAnswer["solution"]
         optOutput = model(optInput)
-        objectives = conf.objs(optOutput)
+        objectives = objsFunc(optOutput)
         initialDB.append({
             "index": i,
             "utility": utility(objectives),
