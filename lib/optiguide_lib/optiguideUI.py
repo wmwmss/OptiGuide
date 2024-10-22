@@ -119,8 +119,8 @@ class ParetoFrontGUI(QMainWindow):
         layout = QVBoxLayout(central_widget)
 
         # Create figure and canvas and Navigation toolbar for Pareto front plot
-        plt.style.use('seaborn')   # Matplotlib pre-defined style
-        # plt.style.use('seaborn-v0_8')
+        # plt.style.use('seaborn')   # Matplotlib pre-defined style
+        plt.style.use('seaborn-v0_8')
         figure = Figure()
         self.canvas = FigureCanvas(figure)
         layout.addWidget(self.canvas)
