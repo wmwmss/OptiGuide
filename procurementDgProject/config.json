@@ -1,14 +1,13 @@
 {
-    "model": {
-        "@functionRef": "lib/vThings/vtModels/procurement/modelAM.py:am"
-    },
     "reqSpec": "procurementDgProject/data/specInstances/procurementReqSpecs/reqSpecProcurement0.json",
-    "vtSpec": "procurementDgProject/vtSpecs/procurement0/vtSpec.json",
-
+    "vtSpecs": [ "procurementDgProject/vtSpecs/procurement0/vtSpec.json"
+    ],
+    "settings": {
+      "initialObj": "cost",
+      "alpha_entries": 100,
+      "alpha_epsilon": 0.0001,
+      "unifyObjs_epsilon": 1
+    },
     "input_example": "procurement_in.json",
-    "initialObj": "cost",
-    "alpha_entries": 100,
-    "alpha_epsilon": 0.0001,
-    "unifyObjs_epsilon": 1,
     "folder": "procurementDgProject"
 }

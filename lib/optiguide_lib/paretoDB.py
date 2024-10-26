@@ -146,7 +146,7 @@ def paretoOptimalDB(config, wList, minMaxObjs):
     constFunc = extractConstFunc(config)
 
     # change to vtOptimalInstance, prepare input artifacts
-    with open(dir+config["vtSpec"],"r") as f:
+    with open(dir+config["vtSpecs"][0],"r") as f:
         vtSpec = json.load(f)
     # Create vtSpecNew with the model, input fields replaced
     vtSpecNew = vtSpec.copy()
@@ -185,6 +185,6 @@ def paretoOptimalDB(config, wList, minMaxObjs):
     f = open("initialDB.json","w")
     f.write(json.dumps(initialDB))
 
-    unifyParetoEntries(initialDB, objsSchema, config["unifyObjs_epsilon"])
+    unifyParetoEntries(initialDB, objsSchema, config["settings"]["unifyObjs_epsilon"])
 
 #-------------------------------------------------------------------------------

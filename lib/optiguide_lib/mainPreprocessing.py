@@ -22,7 +22,7 @@ dir=project_root+'procurementDgProject/'
 #-------------------------------------------------------------------------------
 # Extract model from vtSpec
 def extractModel(config):
-    with open(project_root+config["vtSpec"],"r") as f:
+    with open(project_root+config["vtSpecs"][0],"r") as f:
         vtSpec = json.load(f)
     model_path = vtSpec["model"]["@functionRef"].replace('/', '.')
     model_path = re.sub(r'^\.+', '', model_path)
@@ -44,7 +44,7 @@ def extractModel(config):
 #-------------------------------------------------------------------------------
 # Extract input from vtSpec
 def extractInput(config):
-    with open(project_root+config["vtSpec"],"r") as f:
+    with open(project_root+config["vtSpecs"][0],"r") as f:
         vtSpec = json.load(f)
     input_path = vtSpec["parametersSchema"]
     with open(project_root+input_path,"r") as f:
@@ -202,7 +202,7 @@ with open(dir+"config.json", "r") as f:
 # extract objectives schema from reqSpec
 objsSchema = extractObjsSchema(config)
 
-weightsList = generateWeights( objsSchema, config["alpha_entries"], config["alpha_epsilon"])
+weightsList = generateWeights( objsSchema, config["settings"]["alpha_entries"], config["settings"]["alpha_epsilon"])
 #print(weightsList)
 #print(len(weightsList))
 

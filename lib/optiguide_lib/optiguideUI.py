@@ -8,25 +8,21 @@ from matplotlib.figure import Figure
 import pandas as pd
 from paretoset import paretoset
 import matplotlib.pyplot as plt
+from matplotlib.cm import get_cmap
 import mplcursors
 from functools import partial
+import numpy as np
 import os
-
-# import matplotlib.pyplot as plt
-# print(plt.style.available)
 
 # new dir, dir0, dir1
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")) + "/"
 dir0 = dir + "lib/optiguide_lib/"
 dir1 = dir + "procurementDgProject/"
 
-# original dir
-#dir="/Users/talmanie/Desktop/OptiGuide/config_procurement/"
-
 # extract initialObj from config
 with open(dir1+"config.json", "r") as f:
     config = json.load(f)
-initialObj = config["initialObj"]
+initialObj = config["settings"]["initialObj"]
 
 # extract objsSchema from reqSpec
 with open(dir+config["reqSpec"],"r") as f:
@@ -94,19 +90,68 @@ def paretoOptimal(paretoDB, objsSchema, x_axis , y_axis, currentWeights):
     #print(paretoTable_points)
 
     # Sort the list of table points based on the x-axis key values
-    if x_axis=="utility":
-        paretoTable_points = sorted(paretoTable_points, key=lambda x: x["utility"])
-    else:
-        paretoTable_points = sorted(paretoTable_points, key=lambda x: x["objectives"][x_axis])
+    #if x_axis=="utility":
+    #    paretoTable_points = sorted(paretoTable_points, key=lambda x: x["utility"])
+    #else:
+    #    paretoTable_points = sorted(paretoTable_points, key=lambda x: x["objectives"][x_axis])
 
     paretoFront_data={ "currentWeights": currentWeights, "paretoGraph": paretoGraph_points, "paretoTable": paretoTable_points}
 
     return paretoFront_data
 #-------------------------------------------------------------------------------
+class ChartWindow(QWidget):
+    def __init__(self, data, pointOrder):
+        super().__init__()
+        self.data = data
+        self.pointOrder = pointOrder
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle(f"BestSoFar: Point#{self.pointOrder}")
+        self.setGeometry(100, 100, 800, 600)
+
+        # Create a figure and a canvas to display the chart
+        fig = Figure()
+        ax = fig.add_subplot(111)
+        canvas = FigureCanvas(fig)
+
+        # Bar chart Data
+        #print("Test Chart Data:", self.data)
+        categories = list(self.data.keys())
+        values = list(self.data.values())
+
+        # Define a colormap and generate colors
+        cmap = get_cmap('Blues')
+        #cmap = get_cmap('Spectral')
+        #cmap = get_cmap('Set3')
+        colors = cmap(np.linspace(0, 1, len(categories)))
+
+        # Creating the bar chart
+        bars = ax.bar(categories, values, color=colors, width=0.3, edgecolor='black')
+
+        # Adding value labels on top of each bar
+        for bar in bars:
+            yval = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 2), va='bottom')  # va: vertical alignment
+
+        ax.set_ylim(0, 1.1)  # Slightly more than 1 to give space for labels
+        ax.set_ylabel('Normalized Value', fontsize=11, fontweight='bold')
+        ax.set_title('Comparison of Objectives', fontsize=12, fontweight='bold')
+
+        # Set keys positions and labels
+        ax.set_xticks(range(len(categories)))
+        ax.set_xticklabels(categories, fontweight='bold')
+
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(canvas)
+        self.setLayout(layout)
+
 class ParetoFrontGUI(QMainWindow):
 
     def __init__(self, paretoFront_data):
         super(ParetoFrontGUI, self).__init__()
+        self.chart_window = None
         self.setWindowTitle("Current Trade-off")
         self.setGeometry(300, 100, 800, 720)
         self.paretoFront_data = paretoFront_data
@@ -153,56 +198,88 @@ class ParetoFrontGUI(QMainWindow):
         self.plot.set_ylabel(self.paretoFront_data["paretoGraph"].columns[1], weight='bold')
         self.plot.grid(True)
 
-        # Use mplcursors to display coordinates on hover over graph points
-        mplcursors.cursor(scatter,hover=True).connect("add", lambda sel: sel.annotation.set_text(f"({sel.target[0]}, {sel.target[1]})"))
+        # Using mplcursors to handle click events on the scatter plot points
+        cursor = mplcursors.cursor(scatter, hover=False)
+        cursor.connect("add", self.on_graphPoint_clicked)
         self.canvas.draw()
+
+        # Use mplcursors to display coordinates on hover over graph points
+        # mplcursors.cursor(scatter,hover=True).connect("add", lambda sel: sel.annotation.set_text(f"({sel.target[0]}, {sel.target[1]})"))
+        # self.canvas.draw()
+#-------------------------------------------------------------------------------
+    def on_graphPoint_clicked(self, sel):
+        # sel contains information about the clicked point
+        pointIndex = sel.index  # This gets the array index of the clicked point in the paretoGraph data
+        #print(pointindex)
+        self.update_table_with_point_data(pointIndex)
 #-------------------------------------------------------------------------------
     def update_weightsLabel(self):
         currentWeights_text = ',  '.join(f'<b>{obj}</b>: {round(self.paretoFront_data["currentWeights"][obj],3)}' for obj in self.paretoFront_data["currentWeights"])
         self.currentWeights_label.setText("<b style='color:#4C72B0;'> Weights of Current Utility: </b>" + currentWeights_text)
 #-------------------------------------------------------------------------------
     def update_table(self):
-        self.table.setRowCount(len(self.paretoFront_data["paretoTable"]))
-        self.table.setVerticalHeaderLabels(["Rec {}".format(point+1) for point in range(len(self.paretoFront_data["paretoTable"]))])
+        # initially display one row in the table for the highest utility point
+        self.table.setRowCount(1)
+        current_row_index = 0
+
         self.table.setColumnCount(len(objsSchema)+3)  # 3 additional columns for : utility, solution, choose?
         self.table.setHorizontalHeaderLabels(["utility"]+[ obj for obj in objsSchema]+["solution"]+["Choose?"])
 
-        # Populate table with utility values
-        for point in range(len(self.paretoFront_data["paretoTable"])):
-            item = QTableWidgetItem(str(round(self.paretoFront_data["paretoTable"][point]["utility"], 3)))
-            item.setTextAlignment(Qt.AlignCenter)  # Center text alignment
-            self.table.setItem(point, 0, item)
+        max_utility_point = max(self.paretoFront_data["paretoTable"], key=lambda x: x["utility"])
+        max_utility_point_index = self.paretoFront_data["paretoTable"].index(max_utility_point)
+        #print(max_utility_point_index)
 
-        # Populate table with objective values
-        for point in range(len(self.paretoFront_data["paretoTable"])):
-            for i, obj in enumerate(objsSchema):
-                item = QTableWidgetItem(str(self.paretoFront_data["paretoTable"][point]["objectives"][obj]))
-                item.setTextAlignment(Qt.AlignCenter)
-                self.table.setItem(point, i+1, item)
+        self.populate_table(max_utility_point, max_utility_point_index, current_row_index)
 
-        # create a QFont object for underlining
-        fontU = QFont()
-        fontU.setUnderline(True)  # set underline
+#-------------------------------------------------------------------------------
+# This method takes an index of a selected point from the graph and updates the
+# table with data corresponding to that index from paretoTable_points.
+    def update_table_with_point_data(self, pointIndex):
 
-        # Populate table with solution values
-        for point in range(len(self.paretoFront_data["paretoTable"])):
-            item = QTableWidgetItem("Click for details")
+        current_row_index = self.table.rowCount()
+        # Increase the row count to add a new row for the selected point
+        self.table.setRowCount(current_row_index + 1)
+
+        point_data = self.paretoFront_data["paretoTable"][pointIndex]
+
+        self.populate_table(point_data, pointIndex, current_row_index)
+
+#-------------------------------------------------------------------------------
+    def populate_table(self, point_data, pointIndex, current_row_index):
+        # Populate the table with the utility value of the selected point
+        item = QTableWidgetItem(str(round(point_data["utility"], 3)))
+        item.setTextAlignment(Qt.AlignCenter)
+        self.table.setItem(current_row_index, 0, item)
+
+        # Populate the table with the objective values of the selected point
+        for i, obj in enumerate(objsSchema):
+            item = QTableWidgetItem(str(point_data["objectives"][obj]))
             item.setTextAlignment(Qt.AlignCenter)
-            item.setFont(fontU)
-            item.setData(Qt.UserRole, self.paretoFront_data["paretoTable"][point]["input"])
-            self.table.setItem(point, self.table.columnCount()-2, item)
+            self.table.setItem(current_row_index, i+1, item)
+
+        # Populate the table with solution values of the selected point
+        item = QTableWidgetItem("Click for details")
+        item.setTextAlignment(Qt.AlignCenter)
+        fontU = QFont()
+        fontU.setUnderline(True)
+        item.setFont(fontU)
+        item.setData(Qt.UserRole, point_data["input"])
+        self.table.setItem(current_row_index, self.table.columnCount()-2, item)
         # connect the cellClicked signal to the show_dict slot
         self.table.cellClicked.connect(self.show_dict)
 
-        # Add "Best" buttons to the last column of each row
-        for row in range(self.table.rowCount()):
-            button = QPushButton("Best")
-            button.setStyleSheet("background-color: lightgray; color: black;")
-            self.table.setCellWidget(row, self.table.columnCount()-1, button)
-            # When a button is clicked, call the button_clicked function with the index of row containing the clicked button
-            button.clicked.connect(partial(self.button_clicked, row_index=row))
+        # Add "Best" button to the last column
+        button = QPushButton("Best")
+        button.setStyleSheet("background-color: lightgray; color: black;")
+        self.table.setCellWidget(current_row_index, self.table.columnCount()-1, button)
+        # When a button is clicked, call the on_best_button_clicked function with the index of the selected point
+        button.clicked.connect(partial(self.on_best_button_clicked, pointIndex))
 
-        # Formatting : Set horizontal and vertical header labels in bold
+        # Formatting >
+        # Update all vertical header labels to reflect the correct "Rec" numbering
+        labels = ["Rec {}".format(i + 1) for i in range(current_row_index + 1)]
+        self.table.setVerticalHeaderLabels(labels)
+        # Set horizontal and vertical header labels in bold
         fontB = QFont()
         fontB.setBold(True)
         for i in range(self.table.columnCount()):
@@ -211,6 +288,7 @@ class ParetoFrontGUI(QMainWindow):
             self.table.verticalHeaderItem(i).setFont(fontB)
         # Resize the columns to fit the contents
         self.table.resizeColumnsToContents()
+
 #-------------------------------------------------------------------------------
     def show_dict(self, row, col):
         # check if the clicked cell is the one containing dictionary
@@ -254,19 +332,35 @@ class ParetoFrontGUI(QMainWindow):
 
             dialog.exec_()
 #-------------------------------------------------------------------------------
-    def button_clicked(self, row_index):
-        # Perform actions based on row index of the clicked button
-        currentWeights = self.paretoFront_data["paretoTable"][row_index]["weights"]
+    def on_best_button_clicked(self, pointIndex):
+        # Extract data based on the point associated with the clicked button
+        currentWeights = self.paretoFront_data["paretoTable"][pointIndex]["weights"]
         currentXaxis= self.paretoFront_data["paretoGraph"].columns[0]
         currentYaxis= self.paretoFront_data["paretoGraph"].columns[1]
 
         # Ask user for confirmation
         reply = QMessageBox.question(self, 'Confirmation', 'Are you sure this selection is the best?', QMessageBox.Yes | QMessageBox.No)
         if reply == QMessageBox.Yes:
-            bestSoFar.append(self.paretoFront_data["paretoTable"][row_index])   # compute its updated utility on the fly
-            #print(bestSoFar)
+
+            selected_point = self.paretoFront_data["paretoTable"][pointIndex]
+
+            bestSoFar.append(selected_point)   # compute its updated utility on the fly or retreive it from paretoDB
+            #print("bestSoFar:", bestSoFar)
+
+            selected_point_chartData = selected_point["norm_objectives"]
+            pointOrder = bestSoFar.index(selected_point)+1
+
+            # Open the chart window
+            try:
+                self.chart_window = ChartWindow(selected_point_chartData, pointOrder)
+                self.chart_window.show()
+
+            except Exception as e:
+                print(f"Error opening chart window: {e}")
+
             paretoFront_newData = paretoOptimal(paretoDB, objsSchema, currentXaxis, currentYaxis, currentWeights)
             self.update_state(paretoFront_newData)
+
 #-------------------------------------------------------------------------------
     def update_state(self, paretoFront_newData):
 
@@ -293,7 +387,6 @@ if __name__ == '__main__':
     #paretoFront_data = paretoOptimal(paretoDB, objsSchema,"cost", "co2", currentWeights)
     systemState.append(paretoFront_data)
 
-
     # Create Qt application
     app = QApplication(sys.argv)
 
@@ -303,4 +396,5 @@ if __name__ == '__main__':
 
     # Start event loop
     sys.exit(app.exec_())
+
 #-------------------------------------------------------------------------------

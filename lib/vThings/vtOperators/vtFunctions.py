@@ -138,7 +138,6 @@ def vtOptimalInstance(vtSpec, vtReqSpec, utility, options = None):
         model,
         input,
         minMaxFlag,
-        # utilityFunction,
         obj,
         constraints,
         # options
