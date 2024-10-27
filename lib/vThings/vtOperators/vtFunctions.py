@@ -145,3 +145,67 @@ def vtOptimalInstance(vtSpec, vtReqSpec, utility, options = None):
         {"problemType": "mip", "solver":"gurobi_direct","debug": True}
     )
     return vtOptimal
+
+#-------------------------------------------------------------------------------
+
+# find optimal vt instances from a set of vtSpecs
+def vtOptimalInstance(vtSpecSet, vtReqSpec, utility, options = None):
+    results = []
+    for vtSpec in vtSpecSet:
+        # extract AM
+        model = vtSpec["model"]
+        # extract model input
+        input = vtSpec["parametersSchema"]
+        # extract obj function
+        objectives = vtReqSpec["objectives"]["function"]
+        objsSchemaAndBounds = vtReqSpec["objectives"]["schema"]
+
+        # get utility function from wList and normObjs
+        # o is output of the model
+        # def utilityFunction(o):
+        #     objs = objectives(o)
+        #     utilityValue = sum([objs[obj]*utility["weights"][obj] for obj in objsSchemaAndBounds])
+        #     return utilityValue
+
+        #minMaxFlag = utility["minMax"]
+        # normalized objs, always max utility
+        minMaxFlag = "max"
+
+        def constraints(o):
+            modelComputedConstraints = o["constraints"]
+            # possibly implement in DGAL, assuming we have it here
+            if "metricSchema" in vtSpec:
+                vtMetricBounds = boundConstraints(vtSpec["metricSchema"],o)
+            else:
+                vtMetricBounds = True
+            if "metricSchema" in vtReqSpec:
+                reqMetricBounds = boundConstraints(vtReqSpec["metricSchema"],o)
+            else:
+                reqMetricBounds = True
+            objs = objectives(o)
+            objsBounds = boundConstraints(objsSchemaAndBounds, objs)
+            constraints = dgal.all([
+                modelComputedConstraints,
+                vtMetricBounds,
+                reqMetricBounds,
+                objsBounds
+            ])
+            return(constraints)
+
+        def obj(o):
+            return utility(objectives(o))
+
+        vtOptimal = dgal.optimize(
+            model,
+            input,
+            minMaxFlag,
+            obj,
+            constraints,
+            # options
+            {"problemType": "mip", "solver":"gurobi_direct","debug": True}
+        )
+        
+        if vtOptimal["status"]["termination_condition"] == "optimal":
+            # append to result if an optimal solution is found
+            results.append(vtOptimal)
+    return results
