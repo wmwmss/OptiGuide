@@ -1,0 +1,13 @@
+{
+  "@context": {
+    "@vtModels": "lib/vThings/vtModels/",
+    "@vt": "procurementDgProject/data/vtInstances/",
+    "@vtSpecs":"procurementDgProject/vtSpecs/",
+    "@vtMetricSchemas":"procurementDgProject/metricSchema/"
+  },
+  "model": {
+    "@functionRef": "lib/vThings/vtModels/procurement/modelAM.py:am"
+},
+  "parametersSchema": "procurementDgProject/vtSpecs/procurement1/parametersSchema.json",
+  "metricSchema": "@vtMetricSchemas/metricSchema.json"
+}

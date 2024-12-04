@@ -7,6 +7,7 @@ from scipy.spatial import distance
 import sys
 import lib.dgal_lib.dgalPy as dgal
 from lib.vThings.vtOperators.vtFunctions import vtOptimalInstance
+from lib.vThings.vtOperators.vtFunctions import vtOptimalInstanceFromSet
 
 print(f"Python version: {sys.version}")
 print(f"Python path: {sys.path}")
@@ -125,14 +126,6 @@ def normObjectives(objectives, objsSchema, minMaxObjs):
 # Generate optimal Pareto Preprocessing Structure
 def paretoOptimalDB(config, wList, minMaxObjs):
 
-    # extract input from vtSpec
-    from lib.optiguide_lib.mainPreprocessing import extractInput
-    input = extractInput(config)
-
-    # extract model from vtSpec
-    from lib.optiguide_lib.mainPreprocessing import extractModel
-    model = extractModel(config)
-
     # extract objectives schema from reqSpec
     from lib.optiguide_lib.mainPreprocessing import extractObjsSchema
     objsSchema = extractObjsSchema(config)
@@ -145,13 +138,6 @@ def paretoOptimalDB(config, wList, minMaxObjs):
     from lib.optiguide_lib.mainPreprocessing import extractConstFunc
     constFunc = extractConstFunc(config)
 
-    # change to vtOptimalInstance, prepare input artifacts
-    with open(dir+config["vtSpecs"][0],"r") as f:
-        vtSpec = json.load(f)
-    # Create vtSpecNew with the model, input fields replaced
-    vtSpecNew = vtSpec.copy()
-    vtSpecNew["model"] = model
-    vtSpecNew["parametersSchema"] = input
     # Create vtReqSpecNew with the objectives function, constraints replaced
     with open(dir+config["reqSpec"],"r") as f:
         vtReqSpec = json.load(f)
@@ -159,15 +145,37 @@ def paretoOptimalDB(config, wList, minMaxObjs):
     vtReqSpecNew["objectives"]["function"] = objsFunc
     vtReqSpecNew["constraints"] = constFunc
 
+    # Prepare vtSpecSet for the vtOptimalInstanceFromSet function
+    vtSpecSet = []
+    vtSpecs = config["vtSpecs"]
+    for vtSpec_path in vtSpecs:
+        # extract input from vtSpec
+        from lib.optiguide_lib.mainPreprocessing import extractInput
+        input = extractInput(vtSpec_path)
+
+        # extract model from vtSpec
+        from lib.optiguide_lib.mainPreprocessing import extractModel
+        model = extractModel(vtSpec_path)
+
+        # change to vtOptimalInstance, prepare input artifacts
+        with open(dir + vtSpec_path,"r") as f:
+            vtSpec = json.load(f)
+        # Create vtSpecNew with the model, input fields replaced
+        vtSpecNew = vtSpec.copy()
+        vtSpecNew["model"] = model
+        vtSpecNew["parametersSchema"] = input
+
+        vtSpecSet.append(vtSpecNew)
+
     # Construct initialDB list that contains all possible feasible solutions
     initialDB = list()
     for i in range(len(wList)):
 
         def utility(objectives):
             normObjs = normObjectives(objectives, objsSchema, minMaxObjs)
-            return sum([ normObjs[obj] * wList[i][obj] for obj in normObjs])
+            return sum([ normObjs[obj] * wList[i][obj] for obj in normObjs]) / sum([wList[i][obj] for obj in normObjs])
 
-        optAnswer = vtOptimalInstance(vtSpecNew, vtReqSpecNew, utility, options = None)
+        optAnswer = vtOptimalInstanceFromSet(vtSpecSet, vtReqSpecNew, utility, options = None)
 
         optInput = optAnswer["solution"]
         optOutput = model(optInput)

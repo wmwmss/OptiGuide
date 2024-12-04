@@ -6,6 +6,7 @@ import importlib
 from itertools import product
 import importlib.util
 import os
+from math import inf
 
 # Get the project root directory (assuming it's named "OptiGuide")
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")) + "/"
@@ -21,8 +22,8 @@ dir=project_root+'procurementDgProject/'
 
 #-------------------------------------------------------------------------------
 # Extract model from vtSpec
-def extractModel(config):
-    with open(project_root+config["vtSpecs"][0],"r") as f:
+def extractModel(vtSpec_path):
+    with open(project_root + vtSpec_path,"r") as f:
         vtSpec = json.load(f)
     model_path = vtSpec["model"]["@functionRef"].replace('/', '.')
     model_path = re.sub(r'^\.+', '', model_path)
@@ -43,8 +44,8 @@ def extractModel(config):
 
 #-------------------------------------------------------------------------------
 # Extract input from vtSpec
-def extractInput(config):
-    with open(project_root+config["vtSpecs"][0],"r") as f:
+def extractInput(vtSpec_path):
+    with open(project_root + vtSpec_path,"r") as f:
         vtSpec = json.load(f)
     input_path = vtSpec["parametersSchema"]
     with open(project_root+input_path,"r") as f:
@@ -126,13 +127,7 @@ def generateWeights(objsSchema, num_entries, e):
 #-------------------------------------------------------------------------------
 
 # Compute min and max possible value for each objective
-def computeMinMax(config):
-
-    # extract input from vtSpec
-    input = extractInput(config)
-
-    # extract model from vtSpec
-    model = extractModel(config)
+def computeMinMax(objsSchema, config):
 
     # extract objectives function from reqSpec
     objsFunc = extractObjsFunc(config)
@@ -140,59 +135,90 @@ def computeMinMax(config):
     # extract constraints function from reqSpec
     constFunc = extractConstFunc(config)
 
-    minMaxObjs = {}
-    for obj in objsSchema:
-        if objsSchema[obj]["minMax"]=="min": # a minimization metric
-        # optimizing the objective to find its Minimum value
-            optAnswer_minObj = dgal.min({
-                "model": model,
-                "input": input,
-                "obj": lambda o: objsFunc(o)[obj],
-                "constraints": lambda o: constFunc(o),
-                #"options": {"problemType": "mip", "solver":"glpk","debug": True}
-                "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
-                })
-            optOutput = model(optAnswer_minObj["solution"])
-            minObj = objsFunc(optOutput)[obj]
-        # optimizing the objective to find its Maximum value
-            optAnswer_maxObj = dgal.max({
-                "model": model,
-                "input": input,
-                "obj": lambda o: objsFunc(o)[obj],
-                "constraints": lambda o: dgal.all([ constFunc(o), objsFunc(o)[obj] <= objsSchema[obj]["ub"]]),
-                #"options": {"problemType": "mip", "solver":"glpk","debug": True}
-                "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
-                })
-            optOutput = model(optAnswer_maxObj["solution"])
-            maxObj = objsFunc(optOutput)[obj]
+    vtSpecSet_minMaxObjs = []
 
-        else:                           # a maximization metric
-        # optimizing the objective to find its Maximum value
-            optAnswer_maxObj = dgal.max({
-                "model": model,
-                "input": input,
-                "obj": lambda o: objsFunc(o)[obj],
-                "constraints": lambda o: constFunc(o),
-                #"options": {"problemType": "mip", "solver":"glpk","debug": True}
-                "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
-                })
-            optOutput = model(optAnswer_maxObj["solution"])
-            maxObj = objsFunc(optOutput)[obj]
-        # optimizing the objective to find its Minimum value
-            optAnswer_minObj = dgal.min({
-                "model": model,
-                "input": input,
-                "obj": lambda o: objsFunc(o)[obj],
-                "constraints": lambda o: dgal.all([ constFunc(o) , objsFunc(o)[obj] >= objsSchema[obj]["lb"]]),
-                #"options": {"problemType": "mip", "solver":"glpk","debug": True}
-                "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
-                })
-            optOutput = model(optAnswer_minObj["solution"])
-            minObj = objsFunc(optOutput)[obj]
+    vtSpecs = config["vtSpecs"]
+    for vtSpec in vtSpecs:
+        # extract input from vtSpec
+        input = extractInput(vtSpec)
 
-        minMaxObjs.update({obj :{"min":minObj, "max": maxObj} })
-        #minMaxObjs[obj]= {"min":minObj, "max": maxObj}
-    return minMaxObjs
+        # extract model from vtSpec
+        model = extractModel(vtSpec)
+
+        minMaxObjs = {}
+        for obj in objsSchema:
+            if objsSchema[obj]["minMax"]=="min": # a minimization metric
+            # optimizing the objective to find its Minimum value
+                optAnswer_minObj = dgal.min({
+                    "model": model,
+                    "input": input,
+                    "obj": lambda o: objsFunc(o)[obj],
+                    "constraints": lambda o: constFunc(o),
+                    #"options": {"problemType": "mip", "solver":"glpk","debug": True}
+                    "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
+                    })
+                optOutput = model(optAnswer_minObj["solution"])
+                minObj = objsFunc(optOutput)[obj]
+            # optimizing the objective to find its Maximum value
+                optAnswer_maxObj = dgal.max({
+                    "model": model,
+                    "input": input,
+                    "obj": lambda o: objsFunc(o)[obj],
+                    "constraints": lambda o: dgal.all([ constFunc(o), objsFunc(o)[obj] <= objsSchema[obj]["ub"]]),
+                    #"options": {"problemType": "mip", "solver":"glpk","debug": True}
+                    "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
+                    })
+                optOutput = model(optAnswer_maxObj["solution"])
+                maxObj = objsFunc(optOutput)[obj]
+
+            else:                           # a maximization metric
+            # optimizing the objective to find its Maximum value
+                optAnswer_maxObj = dgal.max({
+                    "model": model,
+                    "input": input,
+                    "obj": lambda o: objsFunc(o)[obj],
+                    "constraints": lambda o: constFunc(o),
+                    #"options": {"problemType": "mip", "solver":"glpk","debug": True}
+                    "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
+                    })
+                optOutput = model(optAnswer_maxObj["solution"])
+                maxObj = objsFunc(optOutput)[obj]
+            # optimizing the objective to find its Minimum value
+                optAnswer_minObj = dgal.min({
+                    "model": model,
+                    "input": input,
+                    "obj": lambda o: objsFunc(o)[obj],
+                    "constraints": lambda o: dgal.all([ constFunc(o) , objsFunc(o)[obj] >= objsSchema[obj]["lb"]]),
+                    #"options": {"problemType": "mip", "solver":"glpk","debug": True}
+                    "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
+                    })
+                optOutput = model(optAnswer_minObj["solution"])
+                minObj = objsFunc(optOutput)[obj]
+
+            minMaxObjs.update({obj :{"min":minObj, "max": maxObj} })
+            #minMaxObjs[obj]= {"min":minObj, "max": maxObj}
+
+        vtSpecSet_minMaxObjs.append(minMaxObjs)
+
+    # Initialize a dictionary to hold the min/max values for each obj in the vtSpecSet_minMaxObjs list
+    result = {}
+
+    # Iterate through each minMaxObjs dictionary in the vtSpecSet_minMaxObjs list
+    for dict in vtSpecSet_minMaxObjs:
+        for key, value in dict.items():
+            if key not in result:
+                # If the key doesn't exist in result, initialize it with infinities
+                result[key] = {"min": inf, "max": -inf}
+            # Update the minimum value
+            result[key]["min"] = min(result[key]["min"], value["min"])
+            # Update the maximum value
+            result[key]["max"] = max(result[key]["max"], value["max"])
+
+    #print("vtSpecSet_minMaxObjs: ", vtSpecSet_minMaxObjs)
+    #print("##########")
+    #print("minMaxObjs: ", result)
+
+    return result
 
 #-------------------------------------------------------------------------------
 
@@ -202,11 +228,11 @@ with open(dir+"config.json", "r") as f:
 # extract objectives schema from reqSpec
 objsSchema = extractObjsSchema(config)
 
-weightsList = generateWeights( objsSchema, config["settings"]["alpha_entries"], config["settings"]["alpha_epsilon"])
+weightsList = generateWeights(objsSchema, config["settings"]["alpha_entries"], config["settings"]["alpha_epsilon"])
 #print(weightsList)
 #print(len(weightsList))
 
-minMaxObjs = computeMinMax(config)
+minMaxObjs = computeMinMax(objsSchema, config)
 #print(minMaxObjs)
 
 podb.paretoOptimalDB(config, weightsList, minMaxObjs)
