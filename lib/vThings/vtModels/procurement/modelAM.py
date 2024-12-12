@@ -31,10 +31,10 @@ def am(input):
         "cost": cost,
         "co2": co2,
         "manufTime": manufTime,
-        "constraints": constraints,
-        "debug": {
-            "supply": supply,
-            "availabilityConstraint": availabilityConstraint,
-            "demandSatisfiedConstraint": demandSatisfiedConstraint
-        }
+        "constraints": constraints
+        #"debug": {
+        #    "supply": supply,
+        #    "availabilityConstraint": availabilityConstraint,
+        #    "demandSatisfiedConstraint": demandSatisfiedConstraint
+        #}
     }

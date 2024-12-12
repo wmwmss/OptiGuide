@@ -14,8 +14,8 @@ from functools import partial
 import seaborn as sns
 import numpy as np
 import os
-import warnings
-warnings.filterwarnings("ignore", module="mplcursors._pick_info")
+#import warnings
+#warnings.filterwarnings("ignore", module="mplcursors._pick_info")
 #-------------------------------------------------------------------------------
 
 # Get the absolute path to a resource
@@ -49,8 +49,9 @@ with open(paretoDB_path, "r") as f:
 
 # System Global Variables
 systemState = list()
+currentTable = list()
 bestSoFar = list()
-
+optimalRec = {}
 #-------------------------------------------------------------------------------
 # Prepare Pareto optimal graph from the ParetoDB points based on the selected x_axis & y_axis objectives and the current weights.
 def paretoOptimal(paretoDB, objsSchema, x_axis , y_axis, currentWeights):
@@ -174,14 +175,19 @@ class ParetoFrontGUI(QMainWindow):
         # Create table widget for Pareto front data
         self.table = QTableWidget()
 
-        # ComboBox for sorting the table
+        # Setup the horizontal layout for the combo box used for sorting the table
+        combo_layout = QHBoxLayout()
+        sort_label = QLabel("Sort Table By:")
+        sort_label.setFont(QFont("Arial", 12))
         self.sortComboBox = QComboBox()
         self.sortComboBox.addItems(["utility"] + list(objsSchema.keys()))
-        #self.sortComboBox.currentIndexChanged.connect(self.sortTable)
+        self.sortComboBox.currentIndexChanged.connect(self.sortTable)
+        combo_layout.addWidget(sort_label, 10)  # Smaller stretch factor for the label
+        combo_layout.addWidget(self.sortComboBox, 90)  # Larger stretch factor for the combo box to fill the space
 
-        # Layout for tradeoff table & comboBox sorting
+        # Layout for tradeoff table & sorting comboBox
         tradeoff_table_layout = QVBoxLayout()
-        #tradeoff_table_layout.addWidget(self.sortComboBox)
+        tradeoff_table_layout.addLayout(combo_layout)
         tradeoff_table_layout.addWidget(self.table)
 
         # Add graph layout and table layout to the horizontal layout
@@ -247,25 +253,6 @@ class ParetoFrontGUI(QMainWindow):
         self.canvas.draw_idle()
 
 #-------------------------------------------------------------------------------
-    def on_graphPoint_clicked(self, sel):
-        # sel contains information about the clicked point
-        pointIndex = sel.index  # This gets the array index of the clicked point in the paretoGraph data
-        #print(pointindex)
-
-        # Change the selected point color to red
-        self.scatter_colors[pointIndex] = 'darkred'
-        self.scatter.set_facecolors(self.scatter_colors)
-        self.canvas.draw_idle()  # Redraw the scatter plot with the updated colors
-
-        current_column_index = self.table.columnCount()
-        # Increase the column count to add a new column for the selected point
-        self.table.setColumnCount(current_column_index + 1)
-        # Get the data of the clicked point from paretoTable_points
-        point_data = self.paretoFront_data["paretoTable"][pointIndex]
-        # update the table with data corresponding to that index
-        self.populate_table(point_data, current_column_index)
-
-#-------------------------------------------------------------------------------
     def setup_weightsLabel(self):
         currentWeights_text = ' ,  '.join(f'<b> {obj}</b>: {round(self.paretoFront_data["currentWeights"][obj],3)}' for obj in self.paretoFront_data["currentWeights"])
         self.currentWeights_label.setText("<b style='color:#4C72B0;'> Weights of Current Utility: </b>" + currentWeights_text)
@@ -286,59 +273,102 @@ class ParetoFrontGUI(QMainWindow):
         #max_utility_point_index = self.paretoFront_data["paretoTable"].index(max_utility_point)
         #print(max_utility_point_index)
 
-        self.populate_table(max_utility_point, current_column_index)
+        currentTable.append(max_utility_point)
+        # Reset combo box index to default after sorting
+        self.sortComboBox.setCurrentIndex(0)
+        
+        self.populate_table()
 
 #-------------------------------------------------------------------------------
-    def populate_table(self, point_data, current_column_index):
+    def on_graphPoint_clicked(self, sel):
+        # sel contains information about the clicked point
+        pointIndex = sel.index  # This gets the array index of the clicked point in the paretoGraph data
+        #print(pointindex)
 
-        # Update all horizontal header labels to reflect the correct "Rec" numbering
-        hLabels = ["Rec {}".format(i + 1) for i in range(current_column_index + 1)]
+        # Change the selected point color to red
+        self.scatter_colors[pointIndex] = 'darkred'
+        self.scatter.set_facecolors(self.scatter_colors)
+        self.canvas.draw_idle()  # Redraw the scatter plot with the updated colors
+
+        #current_column_index = self.table.columnCount()
+        # Increase the column count to add a new column for the selected point
+        #self.table.setColumnCount(current_column_index + 1)
+
+        # Get the data of the clicked point from paretoTable_points
+        point_data = self.paretoFront_data["paretoTable"][pointIndex]
+
+        currentTable.append(point_data)
+        # Sort the current table by utility as the default sorting option
+        # This sorts the list of dictionaries based on the "utility" key in descending order
+        currentTable.sort(key=lambda x: x["utility"], reverse=True)
+        # Reset combo box index to default after sorting
+        self.sortComboBox.setCurrentIndex(0)
+
+        # update the table with data corresponding to that index
+        self.populate_table()
+
+#-------------------------------------------------------------------------------
+    def populate_table(self):
+
+        # Setup column counts
+        self.table.setColumnCount(len(currentTable))
+
+        # Setup horizontal headers
+        hLabels = ["Rec {}".format(i + 1) for i in range(len(currentTable))]
         self.table.setHorizontalHeaderLabels(hLabels)
 
-        # Populate the table with the utility value of the selected point
-        item = QTableWidgetItem(str(round(point_data["utility"], 3)))
-        item.setTextAlignment(Qt.AlignCenter)
-        self.table.setItem(0, current_column_index, item)
+        # Populate the current trade-off table
+        for point in range(len(currentTable)):
 
-        # Populate the table with the objective values of the selected point
-        for i, obj in enumerate(objsSchema):
-            item = QTableWidgetItem(str(point_data["objectives"][obj]))
+            # Populate table with utility values
+            item = QTableWidgetItem(str(round(currentTable[point]["utility"], 3)))
             item.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(i+1, current_column_index, item)
+            self.table.setItem(0, point, item)
 
-        # Populate the table with solution values of the selected point
-        item = QTableWidgetItem("Details")
-        item.setTextAlignment(Qt.AlignCenter)
-        fontU = QFont()
-        fontU.setUnderline(True)
-        item.setFont(fontU)
-        item.setData(self.DETAILS_ROLE, True)  # Mark this item as having details
-        item.setData(Qt.UserRole, point_data["output"])
-        self.table.setItem(self.table.rowCount()-3, current_column_index, item)
+            # Populate table with objective values
+            for i, obj in enumerate(objsSchema):
+                item = QTableWidgetItem(str(currentTable[point]["objectives"][obj]))
+                item.setTextAlignment(Qt.AlignCenter)
+                self.table.setItem(i+1, point, item)
 
-        try:
-            self.table.cellClicked.disconnect(self.show_details_dialog)  # Attempt to disconnect the signal if any
-        except TypeError:
-            pass  # If the signal was not connected, ignore the error
-        self.table.cellClicked.connect(self.show_details_dialog)  # Connect the cellClicked signal to the show_details_dialog slot
+            # Populate table with solution values
+            item = QTableWidgetItem("Details")
+            item.setTextAlignment(Qt.AlignCenter)
+            fontU = QFont()
+            fontU.setUnderline(True)
+            item.setFont(fontU)
+            item.setData(self.DETAILS_ROLE, True)  # Mark this item as having details
+            input_data = currentTable[point]["input"]
+            output_data = currentTable[point]["output"]
+            combined_data = {**output_data, **input_data}  # Merge both dictionaries
+            item.setData(Qt.UserRole, combined_data)
+            self.table.setItem(self.table.rowCount()-3, point, item)
 
-        # Create a radio widget & button for the "Remove?" row
-        radio_widget, radio_button = self.create_radioButton()
+            try:
+                self.table.cellClicked.disconnect(self.show_details_dialog)  # Attempt to disconnect the signal if any
+            except TypeError:
+                pass  # If the signal was not connected, ignore the error
+            self.table.cellClicked.connect(self.show_details_dialog)  # Connect the cellClicked signal to the show_details_dialog slot
 
-        # Add the radio widget to the table
-        self.table.setCellWidget(self.table.rowCount()-2, current_column_index, radio_widget)
+            # Remove >>>
+            # Create a radio widget & button for the "Remove?" row
+            radio_widget, radio_button = self.create_radioButton()
 
-        # Connect the signal of the radio button to the slot: call the on_remove_button_clicked function with the index of the selected column
-        radio_button.clicked.connect(partial(self.on_remove_button_clicked, radio_button))
+            # Add the radio widget to the table
+            self.table.setCellWidget(self.table.rowCount()-2, point, radio_widget)
 
-        # Create a radio widget & button for the "Best?" row
-        radio_widget, radio_button = self.create_radioButton()
+            # Connect the signal of the radio button to the slot: call the on_remove_button_clicked function with the index of the selected point in currentTable
+            radio_button.clicked.connect(partial(self.on_remove_button_clicked, point, radio_button))
 
-        # Add the radio widget to the table
-        self.table.setCellWidget(self.table.rowCount()-1, current_column_index, radio_widget)
+            # Best >>>
+            # Create a radio widget & button for the "Best?" row
+            radio_widget, radio_button = self.create_radioButton()
 
-        # Connect the signal of the radio button to the slot: call the on_best_button_clicked function with the selected point data
-        radio_button.clicked.connect(partial(self.on_best_button_clicked, point_data, radio_button))
+            # Add the radio widget to the table
+            self.table.setCellWidget(self.table.rowCount()-1, point, radio_widget)
+
+            # Connect the signal of the radio button to the slot: call the on_best_button_clicked function with the selected point data in currentTable
+            radio_button.clicked.connect(partial(self.on_best_button_clicked, currentTable[point], radio_button))
 
         # Formatting >
         # Set horizontal and vertical header labels in bold
@@ -350,6 +380,20 @@ class ParetoFrontGUI(QMainWindow):
             self.table.verticalHeaderItem(i).setFont(fontB)
         # Resize the columns to fit the contents
         #self.table.resizeColumnsToContents()
+
+#-------------------------------------------------------------------------------
+    def sortTable(self):
+        sort_index = self.sortComboBox.currentIndex()  # This gets the index of the selected item in the combo box
+        sort_key = self.sortComboBox.currentText()  # This gets the selected text, e.g., "utility", "cost", etc.
+
+        # Sort the currentTable list based on the selected attribute
+        if sort_key == "utility":
+            currentTable.sort(key=lambda x: x[sort_key], reverse=True)
+        else:
+            currentTable.sort(key=lambda x: x["norm_objectives"][sort_key], reverse=True)
+
+        # Regenerate the table with sorted data
+        self.populate_table()
 
 #-------------------------------------------------------------------------------
     def show_details_dialog(self, row, col):
@@ -373,7 +417,7 @@ class ParetoFrontGUI(QMainWindow):
         dialog = QDialog(self)
         layout = QVBoxLayout(dialog)
         dialog.setWindowTitle("Solution Details for the selected point")
-        dialog.setFixedSize(400, 300)
+        dialog.setFixedSize(400, 400)
 
         # Create a tree widget
         tree = QTreeWidget()
@@ -403,23 +447,20 @@ class ParetoFrontGUI(QMainWindow):
         # Execute the dialog
         dialog.exec_()
 #-------------------------------------------------------------------------------
-    def on_remove_button_clicked(self, radioButton):
-        # Find the column index for the clicked radioButton
-        column_index = None
-        for col in range(self.table.columnCount()):
-            widget = self.table.cellWidget(self.table.rowCount() - 2, col)  # The radio buttons are in this row 'self.table.rowCount() - 2'
-            if widget and widget.findChild(QRadioButton) == radioButton:
-                column_index = col
-                break
+    def on_remove_button_clicked(self, pointIndex, radioButton):
 
         if radioButton.isChecked():
             # Ask user for confirmation
-            reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to remove this point', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            reply = QMessageBox.question(self, 'Confirm Removal', f'Are you sure you want to remove Rec#{pointIndex +1}?',
+                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
             if reply == QMessageBox.Yes:
-                self.table.removeColumn(column_index)
-                # Refresh the horizontal header labels after removing the selected column
-                hLabels = ["Rec {}".format(i + 1) for i in range(self.table.columnCount())]
-                self.table.setHorizontalHeaderLabels(hLabels)
+                if 0 <= pointIndex < len(currentTable):
+                    del currentTable[pointIndex]
+                    self.populate_table()
+
+                else:
+                    QMessageBox.warning(self, 'Error', 'Invalid point!')
 
             radioButton.setChecked(False)
 
@@ -427,15 +468,17 @@ class ParetoFrontGUI(QMainWindow):
     def on_best_button_clicked(self, selected_point, radioButton):
 
         if radioButton.isChecked():
-            # Extract data based on the point associated with the clicked button
+            # Extract data of the current axes and the point associated with the clicked button
             currentXaxis= self.paretoFront_data["paretoGraph"].columns[0]
             currentYaxis= self.paretoFront_data["paretoGraph"].columns[1]
             currentWeights = selected_point["weights"]
-            selected_point["comment"]= "" # initialize a comment field to be used by the user if needed
 
             # Ask user for confirmation
-            reply = QMessageBox.question(self, 'Confirmation', 'Are you sure this selection is the best?', QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+            reply = QMessageBox.question(self, 'Confirmation', 'Are you sure this selection is the best?',
+                    QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
             if reply == QMessageBox.Yes:
+                selected_point["comment"]= "" # initialize a comment field to be used by the user if needed
 
                 bestSoFar.append(selected_point)
 
@@ -469,7 +512,7 @@ class ParetoFrontGUI(QMainWindow):
         vLabels = ["Chart"]+["utility"]+[ obj for obj in objsSchema]+["Solution"]+["Comment?"]+["Improve?"]+["Remove?"]+["Accept?"]
         self.bestSoFar_table.setVerticalHeaderLabels(vLabels)
 
-        # Populate bestSoFar_table
+        # Populate the bestSoFar_table
         for point in range(len(bestSoFar)):
 
             # Populate table with bestSoFar charts (the first row)
@@ -493,7 +536,10 @@ class ParetoFrontGUI(QMainWindow):
             fontU.setUnderline(True)
             item.setFont(fontU)
             item.setData(self.DETAILS_ROLE, True)  # Mark this item as having details
-            item.setData(Qt.UserRole, bestSoFar[point]["output"])
+            input_data = bestSoFar[point]["input"]
+            output_data = bestSoFar[point]["output"]
+            combined_data = {**output_data, **input_data}  # Merge both dictionaries
+            item.setData(Qt.UserRole, combined_data)
             self.bestSoFar_table.setItem(self.bestSoFar_table.rowCount()-5, point, item)
 
             try:
@@ -662,9 +708,64 @@ class ParetoFrontGUI(QMainWindow):
                     QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
             if reply == QMessageBox.Yes:
-                print("Accept button clicked")  # Placeholder action
+                optimalRec["point"] = pointData
+                self.bestSoFar_table.clear() # clear the current bestSoFar table
+                self.generate_optimalRec_table()
 
             radioButton.setChecked(False)
+
+#-------------------------------------------------------------------------------
+    # Display only the accepted point in the bestsofar table
+    def generate_optimalRec_table(self):
+
+        # Setup column & row counts
+        self.bestSoFar_table.setColumnCount(1)
+        self.bestSoFar_table.setRowCount(len(objsSchema)+3)  # 3 additional rows for : chart, utility, solution
+
+        # Setup horizontal headers
+        hLabels = ["Optimal Recommendation"]
+        self.bestSoFar_table.setHorizontalHeaderLabels(hLabels)
+
+        # Setup vertical headers
+        vLabels = ["Chart"]+["utility"]+[ obj for obj in objsSchema]+["Solution"]
+        self.bestSoFar_table.setVerticalHeaderLabels(vLabels)
+
+        # Populate table with chart (the first row)
+        self.generateBarChart(0, optimalRec["point"])
+
+        # Populate table with utility values
+        item = QTableWidgetItem(str(round(optimalRec["point"]["utility"], 3)))
+        item.setTextAlignment(Qt.AlignCenter)
+        self.bestSoFar_table.setItem(1, 0, item)
+
+        # Populate table with objective values
+        for i, obj in enumerate(objsSchema):
+            item = QTableWidgetItem(str(optimalRec["point"]["objectives"][obj]))
+            item.setTextAlignment(Qt.AlignCenter)
+            self.bestSoFar_table.setItem(i+2, 0, item)
+
+        # Populate table with solution values
+        item = QTableWidgetItem("Details")
+        item.setTextAlignment(Qt.AlignCenter)
+        fontU = QFont()
+        fontU.setUnderline(True)
+        item.setFont(fontU)
+        item.setData(self.DETAILS_ROLE, True)  # Mark this item as having details
+        input_data = optimalRec["point"]["input"]
+        output_data = optimalRec["point"]["output"]
+        combined_data = {**output_data, **input_data}  # Merge both dictionaries
+        item.setData(Qt.UserRole, combined_data)
+        self.bestSoFar_table.setItem(self.bestSoFar_table.rowCount()-1, 0, item)
+
+        try:
+            self.bestSoFar_table.cellClicked.disconnect(self.show_details_dialog)  # Attempt to disconnect the signal if any
+        except TypeError:
+            pass  # If the signal was not connected, ignore the error
+        self.bestSoFar_table.cellClicked.connect(self.show_details_dialog)  # Connect the cellClicked signal to the show_details_dialog slot
+
+        # Resize the cols & rows to fit the contents
+        self.bestSoFar_table.resizeColumnsToContents()
+        self.bestSoFar_table.resizeRowsToContents()
 
 #-------------------------------------------------------------------------------
     def create_radioButton(self):
@@ -700,6 +801,7 @@ class ParetoFrontGUI(QMainWindow):
 
         # update Pareto Table
         self.table.clear() # clear the old table
+        currentTable.clear()
         self.setup_table()
 
         # Display a message in the status bar

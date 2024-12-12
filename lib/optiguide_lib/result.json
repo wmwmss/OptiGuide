@@ -11,7 +11,7 @@
             "Number of objectives": 1,
             "Number of solutions": 1,
             "Number of variables": 6,
-            "Sense": -1,
+            "Sense": "maximize",
             "Upper bound": 0.9973774834114781
         }
     ],
@@ -23,11 +23,11 @@
     ],
     "Solver": [
         {
-            "Name": "Gurobi 10.02",
+            "Name": "Gurobi 11.00",
             "Status": "ok",
             "Termination condition": "optimal",
             "Termination message": "Model was solved to optimality (subject to tolerances), and an optimal solution is available.",
-            "Wallclock time": 0.0004131793975830078
+            "Wallclock time": 0.00026702880859375
         }
     ]
 }
