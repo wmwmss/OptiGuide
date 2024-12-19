@@ -1,6 +1,6 @@
 {
     "reqSpec": "procurementDgProject/data/specInstances/procurementReqSpecs/reqSpecProcurement0.json",
-    "vtSpecs": [ "procurementDgProject/vtSpecs/procurement0/vtSpec.json",
+    "vtSpecs": [ "procurementDgProject/vtSpecs/procurement1/vtSpec.json",
     "procurementDgProject/vtSpecs/procurement0/vtSpec.json"
     ],
     "settings": {
