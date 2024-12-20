@@ -1,81 +1,81 @@
 {
     "demand": {
-      "chair": 300,
-      "table": 120,
-      "cabinet": 70
+        "chair": 140,
+        "table": 75,
+        "cabinet": 34
     },
     "purchaseInfo": {
-      "ppu": {
-        "supplier1": {
-          "chair": 85,
-          "table": 90,
-          "cabinet": 170
+        "ppu": {
+            "supplier3": {
+                "chair": 75,
+                "table": 92,
+                "cabinet": 164
+            },
+            "supplier4": {
+                "chair": 68,
+                "table": 100,
+                "cabinet": 170
+            }
         },
-        "supplier2": {
-          "chair": 62,
-          "table": 150,
-          "cabinet": 220
-        }
-      },
-      "co2pu": {
-        "supplier1": {
-          "chair": 0.7,
-          "table": 1.9,
-          "cabinet": 2.7
+        "co2pu": {
+            "supplier3": {
+                "chair": 0.5,
+                "table": 1.9,
+                "cabinet": 2.8
+            },
+            "supplier4": {
+                "chair": 0.8,
+                "table": 0.9,
+                "cabinet": 3.1
+            }
         },
-        "supplier2": {
-          "chair": 0.9,
-          "table": 0.75,
-          "cabinet": 3.2
-        }
-      },
-      "manufTimePu": {
-        "supplier1": {
-          "chair": 0.5,
-          "table": 1.25,
-          "cabinet": 2.2
+        "manufTimePu": {
+            "supplier3": {
+                "chair": 0.4,
+                "table": 1.35,
+                "cabinet": 2.3
+            },
+            "supplier4": {
+                "chair": 0.7,
+                "table": 1.2,
+                "cabinet": 2.1
+            }
         },
-        "supplier2": {
-          "chair": 0.8,
-          "table": 1.5,
-          "cabinet": 1.9
-        }
-      },
-      "available": {
-        "supplier1": {
-          "chair": 160,
-          "table": 80,
-          "cabinet": 45
+        "available": {
+            "supplier3": {
+                "chair": 70,
+                "table": 40,
+                "cabinet": 15
+            },
+            "supplier4": {
+                "chair": 80,
+                "table": 70,
+                "cabinet": 25
+            }
         },
-        "supplier2": {
-          "chair": 190,
-          "table": 70,
-          "cabinet": 55
+        "qty": {
+            "supplier3": {
+                "chair": {
+                    "dgalType": "int?"
+                },
+                "table": {
+                    "dgalType": "int?"
+                },
+                "cabinet": {
+                    "dgalType": "int?"
+                }
+            },
+            "supplier4": {
+                "chair": {
+                    "dgalType": "int?"
+                },
+                "table": {
+                    "dgalType": "int?"
+                },
+                "cabinet": {
+                    "dgalType": "int?"
+                }
+            }
         }
-      },
-      "qty": {
-        "supplier1": {
-          "chair": {
-            "dgalType": "int?"
-          },
-          "table": {
-            "dgalType": "int?"
-          },
-          "cabinet": {
-            "dgalType": "int?"
-          }
-        },
-        "supplier2": {
-          "chair": {
-            "dgalType": "int?"
-          },
-          "table": {
-            "dgalType": "int?"
-          },
-          "cabinet": {
-            "dgalType": "int?"
-          }
-        }
-      }
     }
-  }
+}
