@@ -7,14 +7,14 @@
     "purchaseInfo": {
       "ppu": {
         "supplier1": {
-          "chair": 85,
+          "chair": 65,
           "table": 90,
-          "cabinet": 170
+          "cabinet": 160
         },
         "supplier2": {
           "chair": 62,
-          "table": 150,
-          "cabinet": 220
+          "table": 100,
+          "cabinet": 180
         }
       },
       "co2pu": {
@@ -79,4 +79,3 @@
       }
     }
   }
-  

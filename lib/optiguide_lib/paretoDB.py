@@ -54,12 +54,13 @@ def unifyParetoEntries(initialDB, objsSchema, uniEpsilon):
             current_group = [sorted_list[i]]
     groups.append(current_group)
 
+    # Debugging >
     # print the groups of similar objective dictionaries and their weights and original indices
-    for i, group in enumerate(groups):
-        print(f"Group {i+1}:")
-        for dict in group:
-            print("index:", dict["index"],"| objectives:", dict["objectives"], "| weights:", dict["weights"])
-        print()
+    # for i, group in enumerate(groups):
+    #    print(f"Group {i+1}:")
+    #    for dict in group:
+    #        print("index:", dict["index"],"| objectives:", dict["objectives"], "| weights:", dict["weights"])
+    #    print()
 
     paretoDB = []
     for group in groups:
@@ -83,8 +84,8 @@ def unifyParetoEntries(initialDB, objsSchema, uniEpsilon):
 
         original_index = medoid["index"]
 
-        print("Medoid index:", medoid_index)
-        print("Medoid:", medoid)
+        # print("Medoid index:", medoid_index)
+        # print("Medoid:", medoid)
 
         # step#4 >
         paretoDB.append({

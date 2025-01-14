@@ -149,6 +149,10 @@ def vtOptimalInstance(vtSpec, vtReqSpec, utility, options = None):
 
 # find optimal vt instance of max utility from a set of vtSpecs
 def vtOptimalInstanceFromSet(vtSpecSet, vtReqSpec, utility, options = None):
+    # initialization
+    maxUtility = -float("inf")
+    result = None
+
     for vtSpec in vtSpecSet:
         # extract AM
         model = vtSpec["model"]
@@ -204,8 +208,6 @@ def vtOptimalInstanceFromSet(vtSpecSet, vtReqSpec, utility, options = None):
         )
         # assign to result if an optimal solution with max utility is found
 
-        maxUtility = -float("inf")
-        result = None
         if vtOptimal["status"]["termination_condition"] == "optimal":
             #curUtility = utility(objectives(vtOptimal["solution"]))
             curUtility = utility(objectives(model(vtOptimal["solution"])))

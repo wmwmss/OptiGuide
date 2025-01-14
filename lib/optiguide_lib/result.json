@@ -1,7 +1,7 @@
 {
     "Problem": [
         {
-            "Lower bound": 0.9973774834114781,
+            "Lower bound": 0.820219499108886,
             "Name": "unknown",
             "Number of binary variables": 0,
             "Number of constraints": 21,
@@ -12,7 +12,7 @@
             "Number of solutions": 1,
             "Number of variables": 6,
             "Sense": "maximize",
-            "Upper bound": 0.9973774834114781
+            "Upper bound": 0.820219499108886
         }
     ],
     "Solution": [
@@ -27,7 +27,7 @@
             "Status": "ok",
             "Termination condition": "optimal",
             "Termination message": "Model was solved to optimality (subject to tolerances), and an optimal solution is available.",
-            "Wallclock time": 0.00026702880859375
+            "Wallclock time": 0.0002970695495605469
         }
     ]
 }

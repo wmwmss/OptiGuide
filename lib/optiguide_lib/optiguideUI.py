@@ -276,7 +276,7 @@ class ParetoFrontGUI(QMainWindow):
         currentTable.append(max_utility_point)
         # Reset combo box index to default after sorting
         self.sortComboBox.setCurrentIndex(0)
-        
+
         self.populate_table()
 
 #-------------------------------------------------------------------------------
@@ -699,8 +699,13 @@ class ParetoFrontGUI(QMainWindow):
 
 #-------------------------------------------------------------------------------
     def accept_best(self, pointIndex, radioButton):
+        # Extract data and objective weights of the selected point
+        selected_point = bestSoFar[pointIndex]
+        currentWeights = selected_point["weights"]
 
-        pointData = bestSoFar[pointIndex]
+        # Extract data of the current axes
+        currentXaxis= self.paretoFront_data["paretoGraph"].columns[0]
+        currentYaxis= self.paretoFront_data["paretoGraph"].columns[1]
 
         if radioButton.isChecked():
             # Ask user for confirmation
@@ -708,9 +713,14 @@ class ParetoFrontGUI(QMainWindow):
                     QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
             if reply == QMessageBox.Yes:
-                optimalRec["point"] = pointData
+                optimalRec["point"] = selected_point
+
                 self.bestSoFar_table.clear() # clear the current bestSoFar table
                 self.generate_optimalRec_table()
+
+                # Update the Pareto Front GUI and system state
+                paretoFront_newData = paretoOptimal(paretoDB, objsSchema, currentXaxis, currentYaxis, currentWeights)
+                self.update_state(paretoFront_newData)
 
             radioButton.setChecked(False)
 
@@ -734,7 +744,7 @@ class ParetoFrontGUI(QMainWindow):
         self.generateBarChart(0, optimalRec["point"])
 
         # Populate table with utility values
-        item = QTableWidgetItem(str(round(optimalRec["point"]["utility"], 3)))
+        item = QTableWidgetItem(str(round(optimalRec["point"]["precomputed_utility"], 3)))
         item.setTextAlignment(Qt.AlignCenter)
         self.bestSoFar_table.setItem(1, 0, item)
 
