@@ -3,7 +3,7 @@ import lib.dgal_lib.dgalPy as dgal
 
 def am(input):
 
-    demand = input["demand"]
+    #demand = input["demand"]
     purchaseInfo = input["purchaseInfo"]
     ppu = purchaseInfo["ppu"]
     co2pu = purchaseInfo["co2pu"]
@@ -21,13 +21,23 @@ def am(input):
 
     availabilityConstraint = dgal.all([qty[s][i] <= available[s][i] for s in qty for i in qty[s]])
 
+    # compute combined supply
+    # create hypothetical demand, set to 0
+    demand = {}
+    # get key from qty
+    for i in qty:
+        # extract key for each sub item
+        for j in qty[i]:
+            demand.update({j: 0})
+        
     supply = {}
     for i in demand: supply.update({i: sum(qty[s][i] for s in qty)})
 
-    demandSatisfiedConstraint = dgal.all([demand[i] <= supply[i] for i in demand])
-    constraints = dgal.all([nonNegQtysConstraint, availabilityConstraint, demandSatisfiedConstraint])
+    #demandSatisfiedConstraint = dgal.all([demand[i] <= supply[i] for i in demand])
+    constraints = dgal.all([nonNegQtysConstraint, availabilityConstraint])
 
     return {
+        "combinedSupply": supply,
         "cost": cost,
         "co2": co2,
         "manufTime": manufTime,
