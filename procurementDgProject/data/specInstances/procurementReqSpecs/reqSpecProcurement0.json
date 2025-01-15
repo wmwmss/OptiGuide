@@ -5,7 +5,7 @@
     "@vtSpecs":"procurementDgProject/vtSpecs/",
     "@vtMetricSchemas":"procurementDgProject/metricSchema/"
   },
-  "metricSchema":"@vtMetricSchemas/metricSchema.json",
+  "metricSchema":"lib/vThings/vtMetricSchemas/procurement/metricSchema.json",
   "constraints":{
     "@functionRef": "/procurementDgProject/config.py:consts"
   },

@@ -4,10 +4,10 @@
             "Lower bound": 0.820219499108886,
             "Name": "unknown",
             "Number of binary variables": 0,
-            "Number of constraints": 21,
+            "Number of constraints": 27,
             "Number of continuous variables": 0,
             "Number of integer variables": 6,
-            "Number of nonzeros": 54,
+            "Number of nonzeros": 90,
             "Number of objectives": 1,
             "Number of solutions": 1,
             "Number of variables": 6,
@@ -27,7 +27,7 @@
             "Status": "ok",
             "Termination condition": "optimal",
             "Termination message": "Model was solved to optimality (subject to tolerances), and an optimal solution is available.",
-            "Wallclock time": 0.0002970695495605469
+            "Wallclock time": 0.00029587745666503906
         }
     ]
 }

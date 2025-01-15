@@ -17,6 +17,7 @@ sys.path.insert(0, project_root)
 # Now import the modules
 from lib.dgal_lib import dgalPy as dgal
 from lib.optiguide_lib import paretoDB as podb
+from lib.vThings.vtOperators.vtFunctions import boundConstraints
 
 dir=project_root+'procurementDgProject/'
 
@@ -51,6 +52,16 @@ def extractInput(vtSpec_path):
     with open(project_root+input_path,"r") as f:
         input = json.load(f)
     return input
+
+#-------------------------------------------------------------------------------
+# Extract metricSchema from vtSpec
+def extractMetricSchema(vtSpec_path):
+    with open(project_root + vtSpec_path,"r") as f:
+        vtSpec = json.load(f)
+    metricSchema_path = vtSpec["metricSchema"]
+    with open(project_root+metricSchema_path,"r") as f:
+        metricSchema = json.load(f)
+    return metricSchema
 
 #-------------------------------------------------------------------------------
 # Extract objectives schema from reqSpec
@@ -139,11 +150,26 @@ def computeMinMax(objsSchema, config):
 
     vtSpecs = config["vtSpecs"]
     for vtSpec in vtSpecs:
+        # extract model from vtSpec
+        model = extractModel(vtSpec)
+
         # extract input from vtSpec
         input = extractInput(vtSpec)
 
-        # extract model from vtSpec
-        model = extractModel(vtSpec)
+        # extract metricSchema from vtSpec
+        metricSchema = extractMetricSchema(vtSpec)
+
+        def constraints(o):
+            modelComputedConstraints = constFunc(o)
+            vtMetricBounds = boundConstraints(metricSchema, o)
+            objs = objsFunc(o)
+            objsBounds = boundConstraints(objsSchema, objs)
+            constraints = dgal.all([
+                modelComputedConstraints,
+                vtMetricBounds,
+                objsBounds
+            ])
+            return(constraints)
 
         minMaxObjs = {}
         for obj in objsSchema:
@@ -153,7 +179,7 @@ def computeMinMax(objsSchema, config):
                     "model": model,
                     "input": input,
                     "obj": lambda o: objsFunc(o)[obj],
-                    "constraints": lambda o: constFunc(o),
+                    "constraints": constraints,
                     #"options": {"problemType": "mip", "solver":"glpk","debug": True}
                     "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
                     })
@@ -164,7 +190,7 @@ def computeMinMax(objsSchema, config):
                     "model": model,
                     "input": input,
                     "obj": lambda o: objsFunc(o)[obj],
-                    "constraints": lambda o: dgal.all([ constFunc(o), objsFunc(o)[obj] <= objsSchema[obj]["ub"]]),
+                    "constraints": lambda o: dgal.all([ constraints(o), objsFunc(o)[obj] <= objsSchema[obj]["ub"]]),
                     #"options": {"problemType": "mip", "solver":"glpk","debug": True}
                     "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
                     })
@@ -177,7 +203,7 @@ def computeMinMax(objsSchema, config):
                     "model": model,
                     "input": input,
                     "obj": lambda o: objsFunc(o)[obj],
-                    "constraints": lambda o: constFunc(o),
+                    "constraints": constraints,
                     #"options": {"problemType": "mip", "solver":"glpk","debug": True}
                     "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
                     })
@@ -188,7 +214,7 @@ def computeMinMax(objsSchema, config):
                     "model": model,
                     "input": input,
                     "obj": lambda o: objsFunc(o)[obj],
-                    "constraints": lambda o: dgal.all([ constFunc(o) , objsFunc(o)[obj] >= objsSchema[obj]["lb"]]),
+                    "constraints": lambda o: dgal.all([ constraints(o) , objsFunc(o)[obj] >= objsSchema[obj]["lb"]]),
                     #"options": {"problemType": "mip", "solver":"glpk","debug": True}
                     "options": {"problemType": "mip", "solver":"gurobi_direct", "debug": True}
                     })

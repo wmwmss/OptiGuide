@@ -176,20 +176,21 @@ def vtOptimalInstanceFromSet(vtSpecSet, vtReqSpec, utility, options = None):
         def constraints(o):
             modelComputedConstraints = o["constraints"]
             # possibly implement in DGAL, assuming we have it here
-            if "metricSchema" in vtSpec:
-                vtMetricBounds = boundConstraints(vtSpec["metricSchema"],o)
-            else:
-                vtMetricBounds = True
-            if "metricSchema" in vtReqSpec:
-                reqMetricBounds = boundConstraints(vtReqSpec["metricSchema"],o)
-            else:
-                reqMetricBounds = True
+            #if "metricSchema" in vtSpec:
+            #    vtMetricBounds = boundConstraints(vtSpec["metricSchema"],o)
+            #else:
+            #    vtMetricBounds = True
+            #if "metricSchema" in vtReqSpec:
+            #    reqMetricBounds = boundConstraints(vtReqSpec["metricSchema"],o)
+            #else:
+            #    reqMetricBounds = True
+            vtMetricBounds = boundConstraints(vtSpec["metricSchema"], o)
             objs = objectives(o)
             objsBounds = boundConstraints(objsSchemaAndBounds, objs)
             constraints = dgal.all([
                 modelComputedConstraints,
                 vtMetricBounds,
-                reqMetricBounds,
+                #reqMetricBounds,
                 objsBounds
             ])
             return(constraints)

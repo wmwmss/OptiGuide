@@ -1,1 +1,566 @@
-[{"index": 0, "utility": 0.9634760734582183, "weights": {"cost": 0.9980209474768339, "co2": 0.03150671156303524, "manufTime": 0.05441980819450237}, "input": {"demand": {"chair": 140, "table": 75, "cabinet": 34}, "purchaseInfo": {"ppu": {"supplier1": {"chair": 65, "table": 90, "cabinet": 160}, "supplier2": {"chair": 62, "table": 100, "cabinet": 180}}, "co2pu": {"supplier1": {"chair": 0.7, "table": 1.9, "cabinet": 2.7}, "supplier2": {"chair": 0.9, "table": 0.75, "cabinet": 3.2}}, "manufTimePu": {"supplier1": {"chair": 0.5, "table": 1.25, "cabinet": 2.2}, "supplier2": {"chair": 0.8, "table": 1.5, "cabinet": 1.9}}, "available": {"supplier1": {"chair": 60, "table": 30, "cabinet": 25}, "supplier2": {"chair": 90, "table": 50, "cabinet": 15}}, "qty": {"supplier1": {"chair": 50.0, "table": 30.0, "cabinet": 25.0}, "supplier2": {"chair": 90.0, "table": 45.0, "cabinet": 9.0}}}}, "output": {"cost": 21650.0, "co2": 303.05, "manufTime": 274.1, "constraints": true}, "objectives": {"cost": 21650.0, "co2": 303.05, "manufTime": 274.1}, "norm_objectives": {"cost": 1.0, "co2": 0.5848549946294305, "manufTime": 0.5128581925055102}}, {"index": 1, "utility": 0.8821064534673215, "weights": {"cost": 0.9602758282794872, "co2": 0.07854881797000045, "manufTime": 0.2677693350958255}, "input": {"demand": {"chair": 140, "table": 75, "cabinet": 34}, "purchaseInfo": {"ppu": {"supplier1": {"chair": 65, "table": 90, "cabinet": 160}, "supplier2": {"chair": 62, "table": 100, "cabinet": 180}}, "co2pu": {"supplier1": {"chair": 0.7, "table": 1.9, "cabinet": 2.7}, "supplier2": {"chair": 0.9, "table": 0.75, "cabinet": 3.2}}, "manufTimePu": {"supplier1": {"chair": 0.5, "table": 1.25, "cabinet": 2.2}, "supplier2": {"chair": 0.8, "table": 1.5, "cabinet": 1.9}}, "available": {"supplier1": {"chair": 60, "table": 30, "cabinet": 25}, "supplier2": {"chair": 90, "table": 50, "cabinet": 15}}, "qty": {"supplier1": {"chair": 60.0, "table": 30.0, "cabinet": 25.0}, "supplier2": {"chair": 80.0, "table": 45.0, "cabinet": 9.0}}}}, "output": {"cost": 21680.0, "co2": 301.05, "manufTime": 271.1, "constraints": true}, "objectives": {"cost": 21680.0, "co2": 301.05, "manufTime": 271.1}, "norm_objectives": {"cost": 0.995334370139969, "co2": 0.6063372717508053, "manufTime": 0.5569434239529754}}, {"index": 2, "utility": 0.8737885713110751, "weights": {"cost": 0.9510379735636004, "co2": 0.2639367101802294, "manufTime": 0.16082346178116538}, "input": {"demand": {"chair": 140, "table": 75, "cabinet": 34}, "purchaseInfo": {"ppu": {"supplier1": {"chair": 65, "table": 90, "cabinet": 160}, "supplier2": {"chair": 62, "table": 100, "cabinet": 180}}, "co2pu": {"supplier1": {"chair": 0.7, "table": 1.9, "cabinet": 2.7}, "supplier2": {"chair": 0.9, "table": 0.75, "cabinet": 3.2}}, "manufTimePu": {"supplier1": {"chair": 0.5, "table": 1.25, "cabinet": 2.2}, "supplier2": {"chair": 0.8, "table": 1.5, "cabinet": 1.9}}, "available": {"supplier1": {"chair": 60, "table": 30, "cabinet": 25}, "supplier2": {"chair": 90, "table": 50, "cabinet": 15}}, "qty": {"supplier1": {"chair": 60.0, "table": 25.0, "cabinet": 25.0}, "supplier2": {"chair": 80.0, "table": 50.0, "cabinet": 9.0}}}}, "output": {"cost": 21730.0, "co2": 295.3, "manufTime": 272.35, "constraints": true}, "objectives": {"cost": 21730.0, "co2": 295.3, "manufTime": 272.35}, "norm_objectives": {"cost": 0.9875583203732504, "co2": 0.668098818474758, "manufTime": 0.5385745775165315}}, {"index": 3, "utility": 0.8455713300978415, "weights": {"cost": 0.876289336343753, "co2": 9.999999983333334e-05, "manufTime": 0.4817852104519451}, "input": {"demand": {"chair": 140, "table": 75, "cabinet": 34}, "purchaseInfo": {"ppu": {"supplier3": {"chair": 75, "table": 92, "cabinet": 164}, "supplier4": {"chair": 68, "table": 100, "cabinet": 170}}, "co2pu": {"supplier3": {"chair": 0.5, "table": 1.9, "cabinet": 2.8}, "supplier4": {"chair": 0.8, "table": 0.9, "cabinet": 3.1}}, "manufTimePu": {"supplier3": {"chair": 0.4, "table": 1.35, "cabinet": 2.3}, "supplier4": {"chair": 0.7, "table": 1.2, "cabinet": 2.1}}, "available": {"supplier3": {"chair": 70, "table": 40, "cabinet": 15}, "supplier4": {"chair": 80, "table": 70, "cabinet": 25}}, "qty": {"supplier3": {"chair": 70.0, "table": 40.0, "cabinet": 9.0}, "supplier4": {"chair": 70.0, "table": 35.0, "cabinet": 25.0}}}}, "output": {"cost": 22916.0, "co2": 301.2, "manufTime": 246.2, "constraints": true}, "objectives": {"cost": 22916.0, "co2": 301.2, "manufTime": 246.2}, "norm_objectives": {"cost": 0.8031104199066874, "co2": 0.6047261009667024, "manufTime": 0.922850844966936}}, {"index": 4, "utility": 0.9316893840102385, "weights": {"cost": 0.4540261396373124, "co2": 0.7501057791115334, "manufTime": 0.4808342590430919}, "input": {"demand": {"chair": 140, "table": 75, "cabinet": 34}, "purchaseInfo": {"ppu": {"supplier3": {"chair": 75, "table": 92, "cabinet": 164}, "supplier4": {"chair": 68, "table": 100, "cabinet": 170}}, "co2pu": {"supplier3": {"chair": 0.5, "table": 1.9, "cabinet": 2.8}, "supplier4": {"chair": 0.8, "table": 0.9, "cabinet": 3.1}}, "manufTimePu": {"supplier3": {"chair": 0.4, "table": 1.35, "cabinet": 2.3}, "supplier4": {"chair": 0.7, "table": 1.2, "cabinet": 2.1}}, "available": {"supplier3": {"chair": 70, "table": 40, "cabinet": 15}, "supplier4": {"chair": 80, "table": 70, "cabinet": 25}}, "qty": {"supplier3": {"chair": 70.0, "table": 5.0, "cabinet": 15.0}, "supplier4": {"chair": 70.0, "table": 70.0, "cabinet": 19.0}}}}, "output": {"cost": 23160.0, "co2": 264.4, "manufTime": 242.15, "constraints": true}, "objectives": {"cost": 23160.0, "co2": 264.4, "manufTime": 242.15}, "norm_objectives": {"cost": 0.7651632970451011, "co2": 1.0, "manufTime": 0.9823659074210137}}, {"index": 5, "utility": 0.9330339340291636, "weights": {"cost": 0.411556282720437, "co2": 0.2790525642636968, "manufTime": 0.8676122939027495}, "input": {"demand": {"chair": 140, "table": 75, "cabinet": 34}, "purchaseInfo": {"ppu": {"supplier3": {"chair": 75, "table": 92, "cabinet": 164}, "supplier4": {"chair": 68, "table": 100, "cabinet": 170}}, "co2pu": {"supplier3": {"chair": 0.5, "table": 1.9, "cabinet": 2.8}, "supplier4": {"chair": 0.8, "table": 0.9, "cabinet": 3.1}}, "manufTimePu": {"supplier3": {"chair": 0.4, "table": 1.35, "cabinet": 2.3}, "supplier4": {"chair": 0.7, "table": 1.2, "cabinet": 2.1}}, "available": {"supplier3": {"chair": 70, "table": 40, "cabinet": 15}, "supplier4": {"chair": 80, "table": 70, "cabinet": 25}}, "qty": {"supplier3": {"chair": 70.0, "table": 5.0, "cabinet": 9.0}, "supplier4": {"chair": 70.0, "table": 70.0, "cabinet": 25.0}}}}, "output": {"cost": 23196.0, "co2": 266.2, "manufTime": 240.95, "constraints": true}, "objectives": {"cost": 23196.0, "co2": 266.2, "manufTime": 240.95}, "norm_objectives": {"cost": 0.7595645412130637, "co2": 0.9806659505907626, "manufTime": 1.0}}]
+[
+  {
+    "index": 0,
+    "utility": 0.2209337533777752,
+    "weights": {
+      "cost": 0.9980209474768339,
+      "co2": 0.03150671156303524,
+      "manufTime": 0.05441980819450237
+    },
+    "input": {
+      "purchaseInfo": {
+        "ppu": {
+          "supplier1": {
+            "chair": 65,
+            "table": 90,
+            "cabinet": 160
+          },
+          "supplier2": {
+            "chair": 62,
+            "table": 100,
+            "cabinet": 180
+          }
+        },
+        "co2pu": {
+          "supplier1": {
+            "chair": 0.7,
+            "table": 1.9,
+            "cabinet": 2.7
+          },
+          "supplier2": {
+            "chair": 0.9,
+            "table": 0.75,
+            "cabinet": 3.2
+          }
+        },
+        "manufTimePu": {
+          "supplier1": {
+            "chair": 0.5,
+            "table": 1.25,
+            "cabinet": 2.2
+          },
+          "supplier2": {
+            "chair": 0.8,
+            "table": 1.5,
+            "cabinet": 1.9
+          }
+        },
+        "available": {
+          "supplier1": {
+            "chair": 60,
+            "table": 30,
+            "cabinet": 25
+          },
+          "supplier2": {
+            "chair": 90,
+            "table": 50,
+            "cabinet": 15
+          }
+        },
+        "qty": {
+          "supplier1": {
+            "chair": 50,
+            "table": 30,
+            "cabinet": 25
+          },
+          "supplier2": {
+            "chair": 90,
+            "table": 45,
+            "cabinet": 9
+          }
+        }
+      }
+    },
+    "output": {
+      "combinedSupply": {
+        "chair": 140,
+        "table": 75,
+        "cabinet": 34
+      },
+      "cost": 21650,
+      "co2": 303.05,
+      "manufTime": 274.1,
+      "constraints": true
+    },
+    "objectives": {
+      "cost": 21650,
+      "co2": 303.05,
+      "manufTime": 274.1
+    },
+    "norm_objectives": {
+      "cost": 0.228988603988604,
+      "co2": 0.15230769230769228,
+      "manufTime": 0.11294498381877015
+    }
+  },
+  {
+    "index": 1,
+    "utility": 0.20213793884389794,
+    "weights": {
+      "cost": 0.9602758282794872,
+      "co2": 0.07854881797000045,
+      "manufTime": 0.2677693350958255
+    },
+    "input": {
+      "purchaseInfo": {
+        "ppu": {
+          "supplier1": {
+            "chair": 65,
+            "table": 90,
+            "cabinet": 160
+          },
+          "supplier2": {
+            "chair": 62,
+            "table": 100,
+            "cabinet": 180
+          }
+        },
+        "co2pu": {
+          "supplier1": {
+            "chair": 0.7,
+            "table": 1.9,
+            "cabinet": 2.7
+          },
+          "supplier2": {
+            "chair": 0.9,
+            "table": 0.75,
+            "cabinet": 3.2
+          }
+        },
+        "manufTimePu": {
+          "supplier1": {
+            "chair": 0.5,
+            "table": 1.25,
+            "cabinet": 2.2
+          },
+          "supplier2": {
+            "chair": 0.8,
+            "table": 1.5,
+            "cabinet": 1.9
+          }
+        },
+        "available": {
+          "supplier1": {
+            "chair": 60,
+            "table": 30,
+            "cabinet": 25
+          },
+          "supplier2": {
+            "chair": 90,
+            "table": 50,
+            "cabinet": 15
+          }
+        },
+        "qty": {
+          "supplier1": {
+            "chair": 60,
+            "table": 30,
+            "cabinet": 25
+          },
+          "supplier2": {
+            "chair": 80,
+            "table": 45,
+            "cabinet": 9
+          }
+        }
+      }
+    },
+    "output": {
+      "combinedSupply": {
+        "chair": 140,
+        "table": 75,
+        "cabinet": 34
+      },
+      "cost": 21680,
+      "co2": 301.05,
+      "manufTime": 271.1,
+      "constraints": true
+    },
+    "objectives": {
+      "cost": 21680,
+      "co2": 301.05,
+      "manufTime": 271.1
+    },
+    "norm_objectives": {
+      "cost": 0.22792022792022792,
+      "co2": 0.15790209790209786,
+      "manufTime": 0.12265372168284783
+    }
+  },
+  {
+    "index": 2,
+    "utility": 0.20318469543610698,
+    "weights": {
+      "cost": 0.9557747824611432,
+      "co2": 0.2335134291783365,
+      "manufTime": 0.17879050199808805
+    },
+    "input": {
+      "purchaseInfo": {
+        "ppu": {
+          "supplier1": {
+            "chair": 65,
+            "table": 90,
+            "cabinet": 160
+          },
+          "supplier2": {
+            "chair": 62,
+            "table": 100,
+            "cabinet": 180
+          }
+        },
+        "co2pu": {
+          "supplier1": {
+            "chair": 0.7,
+            "table": 1.9,
+            "cabinet": 2.7
+          },
+          "supplier2": {
+            "chair": 0.9,
+            "table": 0.75,
+            "cabinet": 3.2
+          }
+        },
+        "manufTimePu": {
+          "supplier1": {
+            "chair": 0.5,
+            "table": 1.25,
+            "cabinet": 2.2
+          },
+          "supplier2": {
+            "chair": 0.8,
+            "table": 1.5,
+            "cabinet": 1.9
+          }
+        },
+        "available": {
+          "supplier1": {
+            "chair": 60,
+            "table": 30,
+            "cabinet": 25
+          },
+          "supplier2": {
+            "chair": 90,
+            "table": 50,
+            "cabinet": 15
+          }
+        },
+        "qty": {
+          "supplier1": {
+            "chair": 60,
+            "table": 25,
+            "cabinet": 25
+          },
+          "supplier2": {
+            "chair": 80,
+            "table": 50,
+            "cabinet": 9
+          }
+        }
+      }
+    },
+    "output": {
+      "combinedSupply": {
+        "chair": 140,
+        "table": 75,
+        "cabinet": 34
+      },
+      "cost": 21730,
+      "co2": 295.3,
+      "manufTime": 272.35,
+      "constraints": true
+    },
+    "objectives": {
+      "cost": 21730,
+      "co2": 295.3,
+      "manufTime": 272.35
+    },
+    "norm_objectives": {
+      "cost": 0.22613960113960113,
+      "co2": 0.17398601398601396,
+      "manufTime": 0.11860841423948212
+    }
+  },
+  {
+    "index": 3,
+    "utility": 0.19092312114043988,
+    "weights": {
+      "cost": 0.8686146683413988,
+      "co2": 0.00009999999983333334,
+      "manufTime": 0.4954881915264599
+    },
+    "input": {
+      "purchaseInfo": {
+        "ppu": {
+          "supplier3": {
+            "chair": 75,
+            "table": 92,
+            "cabinet": 164
+          },
+          "supplier4": {
+            "chair": 68,
+            "table": 100,
+            "cabinet": 170
+          }
+        },
+        "co2pu": {
+          "supplier3": {
+            "chair": 0.5,
+            "table": 1.9,
+            "cabinet": 2.8
+          },
+          "supplier4": {
+            "chair": 0.8,
+            "table": 0.9,
+            "cabinet": 3.1
+          }
+        },
+        "manufTimePu": {
+          "supplier3": {
+            "chair": 0.4,
+            "table": 1.35,
+            "cabinet": 2.3
+          },
+          "supplier4": {
+            "chair": 0.7,
+            "table": 1.2,
+            "cabinet": 2.1
+          }
+        },
+        "available": {
+          "supplier3": {
+            "chair": 70,
+            "table": 40,
+            "cabinet": 15
+          },
+          "supplier4": {
+            "chair": 80,
+            "table": 70,
+            "cabinet": 25
+          }
+        },
+        "qty": {
+          "supplier3": {
+            "chair": 70,
+            "table": 40,
+            "cabinet": 9
+          },
+          "supplier4": {
+            "chair": 70,
+            "table": 35,
+            "cabinet": 25
+          }
+        }
+      }
+    },
+    "output": {
+      "combinedSupply": {
+        "chair": 140,
+        "table": 75,
+        "cabinet": 34
+      },
+      "cost": 22916,
+      "co2": 301.2,
+      "manufTime": 246.2,
+      "constraints": true
+    },
+    "objectives": {
+      "cost": 22916,
+      "co2": 301.2,
+      "manufTime": 246.2
+    },
+    "norm_objectives": {
+      "cost": 0.1839031339031339,
+      "co2": 0.15748251748251751,
+      "manufTime": 0.20323624595469258
+    }
+  },
+  {
+    "index": 4,
+    "utility": 0.22428052299535012,
+    "weights": {
+      "cost": 0.4540261396373124,
+      "co2": 0.728965889227156,
+      "manufTime": 0.5123172814470555
+    },
+    "input": {
+      "purchaseInfo": {
+        "ppu": {
+          "supplier3": {
+            "chair": 75,
+            "table": 92,
+            "cabinet": 164
+          },
+          "supplier4": {
+            "chair": 68,
+            "table": 100,
+            "cabinet": 170
+          }
+        },
+        "co2pu": {
+          "supplier3": {
+            "chair": 0.5,
+            "table": 1.9,
+            "cabinet": 2.8
+          },
+          "supplier4": {
+            "chair": 0.8,
+            "table": 0.9,
+            "cabinet": 3.1
+          }
+        },
+        "manufTimePu": {
+          "supplier3": {
+            "chair": 0.4,
+            "table": 1.35,
+            "cabinet": 2.3
+          },
+          "supplier4": {
+            "chair": 0.7,
+            "table": 1.2,
+            "cabinet": 2.1
+          }
+        },
+        "available": {
+          "supplier3": {
+            "chair": 70,
+            "table": 40,
+            "cabinet": 15
+          },
+          "supplier4": {
+            "chair": 80,
+            "table": 70,
+            "cabinet": 25
+          }
+        },
+        "qty": {
+          "supplier3": {
+            "chair": 70,
+            "table": 5,
+            "cabinet": 15
+          },
+          "supplier4": {
+            "chair": 70,
+            "table": 70,
+            "cabinet": 19
+          }
+        }
+      }
+    },
+    "output": {
+      "combinedSupply": {
+        "chair": 140,
+        "table": 75,
+        "cabinet": 34
+      },
+      "cost": 23160,
+      "co2": 264.4,
+      "manufTime": 242.15,
+      "constraints": true
+    },
+    "objectives": {
+      "cost": 23160,
+      "co2": 264.4,
+      "manufTime": 242.15
+    },
+    "norm_objectives": {
+      "cost": 0.1752136752136752,
+      "co2": 0.26041958041958047,
+      "manufTime": 0.2163430420711974
+    }
+  },
+  {
+    "index": 5,
+    "utility": 0.21392167767374268,
+    "weights": {
+      "cost": 0.3971919423992821,
+      "co2": 0.24875575024478971,
+      "manufTime": 0.8833793848699647
+    },
+    "input": {
+      "purchaseInfo": {
+        "ppu": {
+          "supplier3": {
+            "chair": 75,
+            "table": 92,
+            "cabinet": 164
+          },
+          "supplier4": {
+            "chair": 68,
+            "table": 100,
+            "cabinet": 170
+          }
+        },
+        "co2pu": {
+          "supplier3": {
+            "chair": 0.5,
+            "table": 1.9,
+            "cabinet": 2.8
+          },
+          "supplier4": {
+            "chair": 0.8,
+            "table": 0.9,
+            "cabinet": 3.1
+          }
+        },
+        "manufTimePu": {
+          "supplier3": {
+            "chair": 0.4,
+            "table": 1.35,
+            "cabinet": 2.3
+          },
+          "supplier4": {
+            "chair": 0.7,
+            "table": 1.2,
+            "cabinet": 2.1
+          }
+        },
+        "available": {
+          "supplier3": {
+            "chair": 70,
+            "table": 40,
+            "cabinet": 15
+          },
+          "supplier4": {
+            "chair": 80,
+            "table": 70,
+            "cabinet": 25
+          }
+        },
+        "qty": {
+          "supplier3": {
+            "chair": 70,
+            "table": 5,
+            "cabinet": 9
+          },
+          "supplier4": {
+            "chair": 70,
+            "table": 70,
+            "cabinet": 25
+          }
+        }
+      }
+    },
+    "output": {
+      "combinedSupply": {
+        "chair": 140,
+        "table": 75,
+        "cabinet": 34
+      },
+      "cost": 23196,
+      "co2": 266.2,
+      "manufTime": 240.95,
+      "constraints": true
+    },
+    "objectives": {
+      "cost": 23196,
+      "co2": 266.2,
+      "manufTime": 240.95
+    },
+    "norm_objectives": {
+      "cost": 0.17393162393162392,
+      "co2": 0.25538461538461543,
+      "manufTime": 0.22022653721682853
+    }
+  }
+]

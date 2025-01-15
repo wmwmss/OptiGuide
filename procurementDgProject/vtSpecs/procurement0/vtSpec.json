@@ -9,5 +9,5 @@
     "@functionRef": "lib/vThings/vtModels/procurement/modelAM.py:am"
 },
   "parametersSchema": "procurementDgProject/vtSpecs/procurement0/parametersSchema.json",
-  "metricSchema": "@vtMetricSchemas/metricSchema.json"
+  "metricSchema": "lib/vThings/vtMetricSchemas/procurement/metricSchema.json"
 }

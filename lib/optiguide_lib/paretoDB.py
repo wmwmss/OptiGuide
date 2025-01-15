@@ -150,13 +150,17 @@ def paretoOptimalDB(config, wList, minMaxObjs):
     vtSpecSet = []
     vtSpecs = config["vtSpecs"]
     for vtSpec_path in vtSpecs:
+        # extract model from vtSpec
+        from lib.optiguide_lib.mainPreprocessing import extractModel
+        model = extractModel(vtSpec_path)
+
         # extract input from vtSpec
         from lib.optiguide_lib.mainPreprocessing import extractInput
         input = extractInput(vtSpec_path)
 
-        # extract model from vtSpec
-        from lib.optiguide_lib.mainPreprocessing import extractModel
-        model = extractModel(vtSpec_path)
+        # extract metricSchema from vtSpec
+        from lib.optiguide_lib.mainPreprocessing import extractMetricSchema
+        metricSchema = extractMetricSchema(vtSpec_path)
 
         # change to vtOptimalInstance, prepare input artifacts
         with open(dir + vtSpec_path,"r") as f:
@@ -165,6 +169,7 @@ def paretoOptimalDB(config, wList, minMaxObjs):
         vtSpecNew = vtSpec.copy()
         vtSpecNew["model"] = model
         vtSpecNew["parametersSchema"] = input
+        vtSpecNew["metricSchema"] = metricSchema
 
         vtSpecSet.append(vtSpecNew)
 
