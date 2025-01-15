@@ -1,9 +1,5 @@
+
 {
-    "demand": {
-        "chair": 140,
-        "table": 75,
-        "cabinet": 34
-    },
     "purchaseInfo": {
         "ppu": {
             "supplier3": {
