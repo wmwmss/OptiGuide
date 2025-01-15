@@ -29,7 +29,7 @@ def am(input):
         # extract key for each sub item
         for j in qty[i]:
             demand.update({j: 0})
-        
+    # same structure with demand    
     supply = {}
     for i in demand: supply.update({i: sum(qty[s][i] for s in qty)})
 
