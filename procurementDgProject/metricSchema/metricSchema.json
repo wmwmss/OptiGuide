@@ -1,4 +1,18 @@
 {
+    "combinedSupply": {
+        "chair": {
+            "dgalType": "intMetric",
+            "lb": 140
+        },
+        "table": {
+            "dgalType": "intMetric",
+            "lb": 75
+        },
+        "cabinet": {
+            "dgalType": "intMetric",
+            "lb": 34
+        }
+    },
     "cost": {
         "dgalType": "floatMetric",
         "lb": 0,
